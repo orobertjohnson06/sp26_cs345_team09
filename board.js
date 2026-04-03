@@ -12,6 +12,9 @@ let board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
 let activePiece = null;
 let nextType = null;
 let score = 0;
+let scoreRequirement = 500;
+let scoreIncrement = 250;
+let scoreFactor = 2;
 let level = 1;
 let stage = 1;
 let linesCleared = 0;
@@ -23,6 +26,10 @@ let holdType = null;
 let holdUsed = false;
 let pieceBag = 30;
 let numLockedPieces = 0;
+
+// gameState will tell the program what should be rendered and processed.
+// valid states: menu, standard, boss, shop
+let gameState = "standard";
 
 let leftHeld = false;
 let rightHeld = false;
@@ -60,13 +67,15 @@ function setup() {
  */
 function draw() {
     background(30);
-    drawBoard();
-    drawGhost();
-    drawActivePiece();
-    drawSidebar();
-    if (!gameOver && !paused) {
-        handleHeldInput();
-        fall();
+    if (gameState === "standard") {
+        drawBoard();
+        drawGhost();
+        drawActivePiece();
+        drawSidebar();
+        if (!gameOver && !paused) {
+            handleHeldInput();
+            fall();
+        }
     }
     if (gameOver) drawGameOver();
     if (paused)   drawPaused();
@@ -228,7 +237,6 @@ function lockPiece() {
     updateScore(clearLines());
     //increment numLockedpieces.
     numLockedPieces++;
-    console.log(numLockedPieces);
     //check if numLockedPieces is less than the bag.
     if (numLockedPieces >= pieceBag) {
         gameOver = true;
@@ -286,11 +294,42 @@ function updateScore(cleared) {
     //score is arbitrary rn, can tune balancing and how we want score later
     linesCleared += cleared;
     score += (POINTS[cleared] || 0);
-    //sets level based on lines clear rn every 10 lines increase the level 
-    level = Math.floor(linesCleared / 10) + 1;
-    //drop interval decreases based on level
-    dropInterval = Math.max(80, 500 - (level - 1) * 40);
+    if (score >= scoreRequirement) {
+        updateLevel();
+    }
 }
+/**
+ * updates level, will increment stage if level == 3.
+ * also increases score
+ * calls softReset()
+ */
+function updateLevel() {
+    console.log("updating level!");
+    if (level === 3) {
+        updateStage();
+    } else {
+        level++;
+        scoreRequirement += scoreIncrement;
+    }
+    softReset();
+    //drop interval decreases based on Stage (and level?)
+    dropInterval = Math.max(80, 500 - (stage - 1) * 100);
+}
+
+/**
+ * updates Stage
+ * increases score as well as the factor by which score increases.
+ * softReset() is called by updateLevel().
+ */
+function updateStage() {
+    console.log("updating stage!");
+    level = 1;
+    stage++;
+    scoreRequirement *= scoreFactor;
+    scoreIncrement *= scoreFactor;
+    scoreFactor *= 2;
+}
+
 
 //handles ghost pieces (aka the highlight of where the piece will land)
 function getGhostPiece() {
@@ -430,14 +469,18 @@ function drawSidebar() {
     drawPreviewPiece(holdType, holdPreviewX, holdPreviewY);
 
     fill(255);
-    textSize(14); text("SCORE", leftPanelX, panelY + 160);
-    textSize(22); text(score, leftPanelX, panelY + 178);
-    textSize(14); text("LEVEL", leftPanelX, panelY + 214);
-    textSize(22); text(level, leftPanelX, panelY + 232);
-    textSize(14); text("LINES", leftPanelX, panelY + 268);
-    textSize(22); text(linesCleared, leftPanelX, panelY + 286);
-    textSize(14); text("PIECES LEFT", leftPanelX, panelY + 320);
-    textSize(22); text(pieceBag - numLockedPieces, leftPanelX, panelY + 340);
+    // UI elements here should have a distance of 20, between their descriptor and value
+    // and a distance of 50 between other descriptors
+    textSize(14); text("GOAL", leftPanelX, panelY + 160);
+    textSize(22); text(scoreRequirement, leftPanelX, panelY + 180);
+    textSize(14); text("SCORE", leftPanelX, panelY + 210);
+    textSize(22); text(score, leftPanelX, panelY + 230);
+    textSize(14); text("LEVEL", leftPanelX, panelY + 260);
+    textSize(22); text(level, leftPanelX, panelY + 280);
+    textSize(14); text("LINES", leftPanelX, panelY + 310);
+    textSize(22); text(linesCleared, leftPanelX, panelY + 330);
+    textSize(14); text("PIECES LEFT", leftPanelX, panelY + 360);
+    textSize(22); text(pieceBag - numLockedPieces, leftPanelX, panelY + 380);
 
     textSize(14); text("NEXT", rightPanelX, panelY);
     const nextPreviewX = rightPanelX;
@@ -551,11 +594,34 @@ function keyReleased() {
 function resetGame() {
     board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
     score = 0;
+    scoreRequirement = 500;
+    scoreIncrement = 500;
+    scoreFactor = 2;
     level = 1;
     linesCleared = 0;
+    numLockedPieces = 0;
     dropInterval = 500;
     gameOver = false;
     paused = false;
+    holdType = null;
+    holdUsed = false;
+    leftHeld = false;
+    rightHeld = false;
+    downHeld = false;
+    lastHorizontalDir = 0;
+    nextHorizontalMove = 0;
+    nextSoftDrop = 0;
+    lockStartedAt = 0;
+    nextType = randomPiece();
+    activePiece  = spawnPiece();
+    lastDrop = millis();
+}
+
+// restarts the game, but keeps various variables. Used for progressing levels and stages.
+function softReset() {
+    board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+    score = 0;
+    numLockedPieces = 0;
     holdType = null;
     holdUsed = false;
     leftHeld = false;
