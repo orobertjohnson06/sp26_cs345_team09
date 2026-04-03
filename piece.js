@@ -7,6 +7,10 @@ class Box {
 }
 
 class Piece {
+    /**
+ * defines shapes. shapes are used alongside Box for rendering and controlling pieces.
+ * cell positions are relative to the position of box. (changing position of box will move the corresponding piece.)
+ */
     static SHAPES = {
         "4Line" : {color: "lightblue", cells: [[0,0],[0,1],[0,2],[0,3]]},
         "L" : {color: "orange", cells: [[0,0],[1,0],[2,0],[2,1]]},

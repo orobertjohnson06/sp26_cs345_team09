@@ -13,6 +13,7 @@ let activePiece = null;
 let nextType = null;
 let score = 0;
 let level = 1;
+let stage = 1;
 let linesCleared = 0;
 let gameOver = false;
 let paused = false;
@@ -54,7 +55,9 @@ function setup() {
     activePiece = spawnPiece();
     lastDrop = millis();
 }
-
+/**
+ * 
+ */
 function draw() {
     background(30);
     drawBoard();
@@ -69,16 +72,29 @@ function draw() {
     if (paused)   drawPaused();
 }
 
+/**
+ * 
+ * @returns string with a piece type from PIECE_TYPES array.
+ */
 function randomPiece() {
     return PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
 }
 
+/**
+ * 
+ * @returns a call to the spawnPieceOfType function, generates a random piece with randomPiece()
+ */
 function spawnPiece() {
     const type = nextType;
     nextType = randomPiece();
     return spawnPieceOfType(type);
 }
 
+/**
+ * creates a new piece object given type
+ * @param type the type of piece to be made. 
+ * @returns a new piece object given type.
+ */
 function spawnPieceOfType(type) {
     const startX = originX + Math.floor((COLS - 4) / 2) * BOX_SIZE;
     const startY = originY;
@@ -89,7 +105,9 @@ function spawnPieceOfType(type) {
     }
     return piece;
 }
-
+/**
+ * 
+ */
 function fall() {
     const now = millis();
     if (now - lastDrop >= dropInterval) {
@@ -105,7 +123,9 @@ function fall() {
         lockStartedAt = 0;
     }
 }
-
+/**
+ * 
+ */
 function handleHeldInput() {
     const now = millis();
 
@@ -133,20 +153,35 @@ function handleHeldInput() {
         nextSoftDrop = now + SOFT_DROP_INTERVAL;
     }
 }
-
+/**
+ * 
+ * @param {*} piece 
+ * @param {*} x 
+ * @param {*} y 
+ * @returns 
+ */
 function canMove(piece, x, y) {
     piece.move(x, y);
     const blocked = collidesWithBoard(piece) || outOfBounds(piece);
     piece.move(-x, -y);
     return !blocked;
 }
-
+/**
+ * 
+ * @returns 
+ */
 function resetLockDelay() {
     if (!activePiece) return;
     lockStartedAt = 0;
     lastDrop = millis();
 }
-
+/**
+ * 
+ * @param {*} piece 
+ * @param {*} x 
+ * @param {*} y 
+ * @returns 
+ */
 function tryMove(piece, x, y) {
     if (!canMove(piece, x, y)) {
         return false;
@@ -154,7 +189,11 @@ function tryMove(piece, x, y) {
     piece.move(x, y);
     return true;
 }
-
+/**
+ * 
+ * @param {*} piece 
+ * @returns 
+ */
 function outOfBounds(piece) {
     return piece.boxes.some(b =>
         b.x < originX ||
@@ -162,7 +201,11 @@ function outOfBounds(piece) {
         b.y + BOX_SIZE > originY + BOARD_H
     );
 }
-
+/**
+ * 
+ * @param {*} piece 
+ * @returns 
+ */
 function collidesWithBoard(piece) {
     return piece.boxes.some(b => {
         const col = Math.round((b.x - originX) / BOX_SIZE);
@@ -196,7 +239,10 @@ function lockPiece() {
     lastDrop = millis();
 
 }
-
+/**
+ * 
+ * @returns 
+ */
 function holdPiece() {
     if (!activePiece || holdUsed) return;
 
@@ -214,7 +260,10 @@ function holdPiece() {
     lockStartedAt = 0;
     lastDrop = millis();
 }
-
+/**
+ * 
+ * @returns 
+ */
 function clearLines() {
     let cleared = 0;
     for (let r = ROWS - 1; r >= 0; r--) {
@@ -229,7 +278,10 @@ function clearLines() {
     }
     return cleared;
 }
-
+/**
+ * 
+ * @param {*} cleared 
+ */
 function updateScore(cleared) {
     //score is arbitrary rn, can tune balancing and how we want score later
     linesCleared += cleared;
@@ -268,7 +320,13 @@ function getGhostPiece() {
     }
     return ghost;
 }
-
+/**
+ * 
+ * @param {*} x 
+ * @param {*} y 
+ * @param {*} size 
+ * @param {*} clr 
+ */
 function drawBox(x, y, size, clr) {
     const spr = SPRITES[clr];
     if (spr) {
@@ -286,7 +344,9 @@ function drawBox(x, y, size, clr) {
         line(x + 1, y + 1, x + 1, y + size - 1);
     }
 }
-
+/**
+ * 
+ */
 function drawBoard() {
     fill(15); 
     noStroke();
@@ -306,7 +366,10 @@ function drawBoard() {
     strokeWeight(2);
     rect(originX, originY, BOARD_W, BOARD_H);
 }
-
+/**
+ * 
+ * @returns 
+ */
 function drawGhost() {
     const ghost = getGhostPiece();
     if (!ghost) return;
@@ -317,12 +380,17 @@ function drawGhost() {
         rect(b.x, b.y, b.size, b.size);
     });
 }
-
+/**
+ * 
+ * @returns 
+ */
 function drawActivePiece() {
     if (!activePiece) return;
     activePiece.boxes.forEach(b => drawBox(b.x, b.y, b.size, activePiece.color));
 }
-
+/**
+ * 
+ */
 function drawSidebar() {
     const leftPanelX = originX - (5 * BOX_SIZE) - 24;
     const rightPanelX = originX + BOARD_W + 20;
@@ -446,12 +514,15 @@ function keyPressed() {
         case UP_ARROW:
             if (activePiece.rotate(COLS, ROWS, originX, originY, board)) resetLockDelay();
             break;
+            // spacebar
         case 32:
             let dropped = 0;
+            //
             while (tryMove(activePiece, 0, BOX_SIZE)) dropped++;
             score += dropped * 2;
             lockPiece();
             break;
+            // "c"
         case 67:
             holdPiece();
             break;
