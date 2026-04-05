@@ -5,6 +5,7 @@ const BOARD_W = COLS * BOX_SIZE;
 const BOARD_H = ROWS * BOX_SIZE;
 const PIECE_TYPES = ["4Line", "L", "BackL", "T", "S", "Z", "2by2"];
 const POINTS = [0, 100, 300, 500, 800];
+const BOSSES = ["rotate"];
 const SPRITES = {};
 
 let originX, originY;
@@ -24,6 +25,8 @@ let dropInterval = 500;
 let lastDrop = 0;
 let holdType = null;
 let holdUsed = false;
+let noRotate = false;
+let skipNextBoss = false;
 let pieceBag = 30;
 let numLockedPieces = 0;
 
@@ -77,6 +80,7 @@ function draw() {
             fall();
         }
     }
+    if (gameState === "shop") drawShop();
     if (gameOver) drawGameOver();
     if (paused)   drawPaused();
 }
@@ -240,6 +244,7 @@ function lockPiece() {
     //check if numLockedPieces is less than the bag.
     if (numLockedPieces >= pieceBag) {
         gameOver = true;
+        return;
     }
     activePiece = spawnPiece();
     holdUsed = false;
@@ -305,17 +310,39 @@ function updateScore(cleared) {
  */
 function updateLevel() {
     console.log("updating level!");
-    if (level === 3) {
-        updateStage();
-    } else {
-        level++;
-        scoreRequirement += scoreIncrement;
+    switch (level) {
+        case 3 : 
+            updateStage();
+            noRotate = false;
+            gameState = "shop";
+            initShop();
+            return;
+        case 2 : 
+            activateBoss();
+        default :
+            level++;
+            scoreRequirement += scoreIncrement;
+            //test
+            gameState = "shop";
+            initShop();
     }
     softReset();
     //drop interval decreases based on Stage (and level?)
     dropInterval = Math.max(80, 500 - (stage - 1) * 100);
 }
 
+function activateBoss() {
+    if (skipNextBoss) {
+        skipNextBoss = false;
+        return;
+    }
+    let boss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
+    switch (boss) {
+        case "rotate" : 
+            noRotate = true;
+            break;
+    }
+}
 /**
  * updates Stage
  * increases score as well as the factor by which score increases.
@@ -520,9 +547,21 @@ function drawPaused() {
     text("PAUSED", originX + BOARD_W / 2, originY + BOARD_H / 2);
 }
 
+function mouseMoved() {
+    if (gameState === "shop") shopMouseMoved();
+}
+
+function mouseClicked() {
+    if (gameState === "shop") shopMouseClicked();
+}
+
 function keyPressed() {
     if (keyCode === 27) {
         paused = !paused; 
+        return;
+    }
+    if (gameState === "shop") {
+        shopKeyPressed(key);
         return;
     }
     if (gameOver) {
@@ -555,7 +594,7 @@ function keyPressed() {
             nextSoftDrop = millis() + SOFT_DROP_INTERVAL;
             break;
         case UP_ARROW:
-            if (activePiece.rotate(COLS, ROWS, originX, originY, board)) resetLockDelay();
+            if (!noRotate && activePiece.rotate(COLS, ROWS, originX, originY, board)) resetLockDelay();
             break;
             // spacebar
         case 32:
@@ -627,6 +666,7 @@ function softReset() {
     leftHeld = false;
     rightHeld = false;
     downHeld = false;
+    noRotate = false;
     lastHorizontalDir = 0;
     nextHorizontalMove = 0;
     nextSoftDrop = 0;
@@ -642,4 +682,11 @@ function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
     originX = (width  - BOARD_W) / 2;
     originY = (height - BOARD_H) / 2;
+}
+
+function closeShop() {
+    gameState = "standard";
+    activateBoss();
+    softReset();
+    dropInterval = Math.max(80, 500 - (stage - 1) * 100);
 }
