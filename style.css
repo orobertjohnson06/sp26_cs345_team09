@@ -6,3 +6,12 @@ html, body {
 canvas {
   display: block;
 }
+
+.start-menu {
+  color: rgb(11, 74, 52);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: baseline;
+  margin: 10px;
+}
