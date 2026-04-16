@@ -29,6 +29,8 @@ let noRotate = false;
 let skipNextBoss = false;
 let pieceBag = 30;
 let numLockedPieces = 0;
+let recollection = 0;
+let maxRecollection = 5;
 
 // gameState will tell the program what should be rendered and processed
 // valid states: menu, standard, boss, shop
@@ -311,6 +313,7 @@ function updateStage() {
     scoreRequirement *= scoreFactor;
     scoreIncrement *= scoreFactor;
     scoreFactor *= 2;
+    maxRecollection++;
 }
 
 function getHindranceText() {
@@ -458,6 +461,8 @@ function drawSidebar() {
     textSize(22); text(linesCleared, leftPanelX, panelY + 400);
     textSize(14); text("PIECES LEFT", leftPanelX, panelY + 430);
     textSize(22); text(pieceBag - numLockedPieces, leftPanelX, panelY + 450);
+    textSize(14); text("RECOLLECTION", leftPanelX, panelY + 480);
+    textSize(22); text(recollection + " / " + maxRecollection, leftPanelX, panelY + 500);
 
     textSize(14); text("NEXT", rightPanelX, panelY);
     const nextPreviewX = rightPanelX;

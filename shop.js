@@ -6,7 +6,9 @@ const SHOP_ITEMS = [
         id: "extra_pieces",
         name: "Extra Pieces",
         description: "Add 5 pieces\nto your bag",
+        recollection: 1,
         apply() {
+
             pieceBag += 5;
         }
     },
@@ -14,6 +16,7 @@ const SHOP_ITEMS = [
         id: "slow_fall",
         name: "Slow Fall",
         description: "Increase drop\ndelay by 75ms",
+        recollection: 0,
         apply() {
             dropInterval = Math.min(500, dropInterval + 75);
         }
@@ -22,6 +25,7 @@ const SHOP_ITEMS = [
         id: "board_wipe",
         name: "Board Wipe",
         description: "Clear the\nbottom 5 rows",
+        recollection: 0,
         apply() {
             for (let i = 0; i < 5; i++) {
                 board.pop();
@@ -33,6 +37,7 @@ const SHOP_ITEMS = [
         id: "peace_treaty",
         name: "Peace Treaty",
         description: "Skip the next\nboss effect",
+        recollection: 2,
         apply() {
             skipNextBoss = true;
         }
@@ -41,6 +46,7 @@ const SHOP_ITEMS = [
         id: "hold_unlock",
         name: "Hold Refresh",
         description: "Reset hold so\nyou can use it",
+        recollection: 0,
         apply() {
             holdUsed = false;
         }
@@ -49,6 +55,7 @@ const SHOP_ITEMS = [
         id: "rotation_free",
         name: "Free Spin",
         description: "Ignore no-rotate\nfor next level",
+        recollection: 1,
         apply() {
             noRotate = false;
             skipNextBoss = true;
@@ -129,6 +136,7 @@ function drawShop() {
         fill(170);
         textSize(11);
         text(item.description, x + CARD_W / 2, y + 112);
+        text("Recollection: " + item.recollection, x + CARD_W / 2, y + 140)
         //key hint at bottom
         fill(hovered ? 255 : 130);
         textSize(11);
@@ -177,6 +185,12 @@ function shopMouseClicked() {
 }
  
 function applyShopItem(i) {
-    shopOfferedItems[i].apply();
-    closeShop();
+    // if item exceeds max recollection, do nothing.
+    if (recollection + shopOfferedItems[i].recollection > maxRecollection) {
+
+    } else {
+        shopOfferedItems[i].apply();
+        recollection += shopOfferedItems[i].recollection;
+        closeShop();
+    }
 }
