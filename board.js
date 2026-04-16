@@ -159,8 +159,8 @@ function drawStageIntro() {
     textSize(18);
 
     fill(255, alpha);
-    textSize(56);
-    text("STAGE " + stage, width / 2, height / 2);
+    textSize(44);
+    text("STAGE " + stage + ": LEVEL " + level, width / 2, height / 2 + 2);
 }
 
 
