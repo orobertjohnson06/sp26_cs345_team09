@@ -337,8 +337,6 @@ function updateScore(cleared) {
 
 function updateLevel() {
     console.log("updating level!");
-    stage++;
-    recollection++;
 
     if (level === 2) {
         activateBoss();
@@ -351,6 +349,8 @@ function updateLevel() {
         scoreRequirement *= scoreFactor;
         scoreIncrement *= scoreFactor;
         scoreFactor *= 2;
+        recollection++;
+        stage++
     } else {
         level++;
         scoreRequirement += scoreIncrement;
