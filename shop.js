@@ -6,7 +6,7 @@ const SHOP_ITEMS = [
         id: "extra_pieces",
         name: "Extra Pieces",
         description: "Add 5 pieces\nto your bag",
-        recollection: 1,
+        cost: 1,
         apply() {
 
             pieceBag += 5;
@@ -16,7 +16,7 @@ const SHOP_ITEMS = [
         id: "slow_fall",
         name: "Slow Fall",
         description: "Increase drop\ndelay by 75ms",
-        recollection: 0,
+        cost: 1,
         apply() {
             dropInterval = Math.min(500, dropInterval + 75);
         }
@@ -25,7 +25,7 @@ const SHOP_ITEMS = [
         id: "board_wipe",
         name: "Board Wipe",
         description: "Clear the\nbottom 5 rows",
-        recollection: 0,
+        cost: 1,
         apply() {
             for (let i = 0; i < 5; i++) {
                 board.pop();
@@ -37,7 +37,7 @@ const SHOP_ITEMS = [
         id: "peace_treaty",
         name: "Peace Treaty",
         description: "Skip the next\nboss effect",
-        recollection: 2,
+        cost: 1,
         apply() {
             skipNextBoss = true;
         }
@@ -46,7 +46,7 @@ const SHOP_ITEMS = [
         id: "hold_unlock",
         name: "Hold Refresh",
         description: "Reset hold so\nyou can use it",
-        recollection: 0,
+        cost: 1,
         apply() {
             holdUsed = false;
         }
@@ -55,7 +55,7 @@ const SHOP_ITEMS = [
         id: "rotation_free",
         name: "Free Spin",
         description: "Ignore no-rotate\nfor next level",
-        recollection: 1,
+        cost: 1,
         apply() {
             noRotate = false;
             skipNextBoss = true;
@@ -67,6 +67,11 @@ const SHOP_ITEMS = [
 let shopOfferedItems = [];
 //which card the mouse is hovering over -1 is none
 let shopHovered = -1;
+let shopErrorUntil = 0;
+
+function relicCost(item) {
+    return Number.isFinite(item.cost) ? item.cost : 1;
+}
  
 /**
  * Picks 3 random unique items and resets hover state.
@@ -76,6 +81,7 @@ function initShop() {
     const shuffled = [...SHOP_ITEMS].sort(() => Math.random() - 0.5);
     shopOfferedItems = shuffled.slice(0, 3);
     shopHovered = -1;
+    shopErrorUntil = 0;
 }
  
 /**
@@ -104,6 +110,9 @@ function drawShop() {
     fill(160);
     textSize(13);
     text("Choose one upgrade to continue", cx, height / 2 - 200);
+    fill(220);
+    textSize(14);
+    text("Recollection: " + recollectionUsed + " / " + recollection, cx, height / 2 - 176);
  
     //cards
     shopOfferedItems.forEach((item, i) => {
@@ -136,12 +145,23 @@ function drawShop() {
         fill(170);
         textSize(11);
         text(item.description, x + CARD_W / 2, y + 112);
-        text("Recollection: " + item.recollection, x + CARD_W / 2, y + 140)
+        fill(200);
+        textSize(11);
+        text("Cost: " + relicCost(item), x + CARD_W / 2, y + 168);
         //key hint at bottom
         fill(hovered ? 255 : 130);
         textSize(11);
         text("[" + (i + 1) + "]  Select", x + CARD_W / 2, y + CARD_H - 22);
     });
+
+    if (millis() < shopErrorUntil) {
+        noStroke();
+        fill(255, 120, 120);
+        textAlign(CENTER, CENTER);
+        textSize(13);
+        text("Not enough recollection", cx, height / 2 + CARD_H / 2 + 28);
+    }
+
     //footer
     noStroke();
     fill(90);
@@ -185,12 +205,15 @@ function shopMouseClicked() {
 }
  
 function applyShopItem(i) {
-    // if item exceeds max recollection, do nothing.
-    if (recollection + shopOfferedItems[i].recollection > maxRecollection) {
-
-    } else {
-        shopOfferedItems[i].apply();
-        recollection += shopOfferedItems[i].recollection;
-        closeShop();
+    const item = shopOfferedItems[i];
+    const cost = relicCost(item);
+    if (recollectionUsed + cost > recollection) {
+        shopErrorUntil = millis() + 900;
+        return;
     }
+
+    item.apply();
+    recollectionUsed += cost;
+    relicsHeld.push({ id: item.id, cost });
+    closeShop();
 }
