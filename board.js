@@ -1209,7 +1209,7 @@ function resetGame() {
     board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
     score = 0;
     scoreRequirement = 500;
-    scoreIncrement = 500;
+    scoreIncrement = 250;
     scoreFactor = 2;
     stage = 1;
     level = 1;
