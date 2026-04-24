@@ -136,7 +136,7 @@ export const RELICS = [
   new Relic({
     id: "turbo_booster",
     name: "Turbo Booster",
-    sprite: "assets/relics/epic_turbobooster.png",
+    sprite: "assets/relics/epic_turboboost.png",
     rarity: "EPIC",
     description: "Hard dropping a piece\nincreases score by +20%.",
     ability(game) {
