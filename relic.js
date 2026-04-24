@@ -1,4 +1,6 @@
-import {sqrBonus, PerfectionBonus, scoreMultiBonus} from "./board.js";
+import {sqrBonus, PerfectionBonus, scoreMultiBonus, setSpin2WinActive,
+   setComboLineActive, setTowerBuilderActive,
+   setTurboBoosterActive, setDoubleHoldActive} from "./board.js";
 const RARITY = Object.freeze({
   COMMON: {label: "Common", color: "#b0b0b0", spawnWeight: 60},
   RARE: {label: "Rare", color: "#2196f3", spawnWeight: 25},
@@ -115,6 +117,36 @@ const RELICS = [
     description: "If the tower is above 60% of the board lines cleared gain 40% score.",
     ability() {
       setTowerBuilderActive(true);
+    },
+  }),
+  new Relic({
+    id: "spin_2_win",
+    name: "Spin 2 Win",
+    sprite: "assets/relics/rare_spin2win.png",
+    rarity: "RARE",
+    description: "Gain +2% score per full rotation on the piece that cleared the line.",
+    ability() {
+      setSpin2WinActive(true);
+    },
+  }),
+  new Relic({
+    id: "turbo_booster",
+    name: "Turbo Booster",
+    sprite: "assets/relics/epic_turbobooster.png",
+    rarity: "EPIC",
+    description: "Hard dropping a piece\nincreases score by +20%.",
+    ability() {
+      setTurboBoosterActive(true);
+    },
+  }),
+  new Relic({
+    id: "holder",
+    name: "Holder",
+    sprite: "assets/relics/epic_holder.png",
+    rarity: "EPIC",
+    description: "Allows holding an extra piece.",
+    ability() {
+      setDoubleHoldActive(true);
     },
   }),
   

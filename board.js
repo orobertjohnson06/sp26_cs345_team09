@@ -84,6 +84,12 @@ export let comboStreak = 0;
 export let comboLineBonus = 0.5;
 export let towerBuilderActive = false;
 export let towerBuilderBonus = 0.4;
+export let spin2WinActive = false;
+export let spin2WinBonus = 0.02
+export let turboBoosterActive = false;
+export let turboBoosterBonus = 0.2;
+export let doubleHoldActive = false;
+export let holdQueue = [];
 
 const HORIZONTAL_REPEAT_DELAY = 140;
 const HORIZONTAL_REPEAT_INTERVAL = 55;
@@ -1313,6 +1319,8 @@ function setBinds() {
     rebuildKeyMap();
 }
 
+
+
 //leader board stuff
 
 function getPlayerName() {
@@ -1326,12 +1334,21 @@ function getPlayerName() {
 
   return playerName;
 }
-
+//setters
 export function setComboLineActive(value) {
     comboLineActive = value;
 }
 export function setTowerBuilderActive(value) {
     towerBuilderActive = value;
+}
+export function setSpin2WinActive(value) {
+    spin2WinActive = value;
+}
+export function setTurboBoosterActive(value) {
+    turboBoosterActive = value;
+}
+export function setDoubleHoldActive(value) {
+    doubleHoldActive = value;
 }
 
 async function submitFinalScore() {
