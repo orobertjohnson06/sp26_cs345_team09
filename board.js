@@ -1366,6 +1366,9 @@ function getPlayerName() {
   return playerName;
 }
 //setters
+export function addSqrBonus(amount) {
+    sqrBonus += amount;
+}
 export function setComboLineActive(value) {
     comboLineActive = value;
 }
@@ -1406,6 +1409,7 @@ function getShopGameState() {
         sqrBonus,
         PerfectionBonus,
         scoreMultiBonus,
+        addSqrBonus,
 
         setComboLineActive,
         setTowerBuilderActive,

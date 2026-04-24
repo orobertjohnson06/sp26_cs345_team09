@@ -77,7 +77,7 @@ export const RELICS = [
     rarity: "COMMON",
     description: "every placed square increases this score bonus by 2",
     ability(game) {
-      game.sqrBonus += 2;
+      addSqrBonus(2);
     },
   }),
 
