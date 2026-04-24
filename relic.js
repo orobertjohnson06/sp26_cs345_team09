@@ -103,7 +103,18 @@ const RELICS = [
     rarity: "RARE",
     description: "Every consecutive line clear gains +50% stacking score.",
     ability() {
-      comboLineActive = true;
+      setComboLineActive(true);
+    },
+  }),
+
+  new Relic({
+    id: "tower_builder",
+    name: "Tower Builder",
+    sprite: "assets/relics/rare_towerbuilder.png",
+    rarity: "RARE",
+    description: "If the tower is above 60% of the board lines cleared gain 40% score.",
+    ability() {
+      setTowerBuilderActive(true);
     },
   }),
   

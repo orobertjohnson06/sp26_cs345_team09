@@ -82,6 +82,8 @@ export let scoreMultiBonus = 1;
 export let comboLineActive = false;
 export let comboStreak = 0;
 export let comboLineBonus = 0.5;
+export let towerBuilderActive = false;
+export let towerBuilderBonus = 0.4;
 
 const HORIZONTAL_REPEAT_DELAY = 140;
 const HORIZONTAL_REPEAT_INTERVAL = 55;
@@ -1325,8 +1327,11 @@ function getPlayerName() {
   return playerName;
 }
 
-function setComboLineActive(value) {
+export function setComboLineActive(value) {
     comboLineActive = value;
+}
+export function setTowerBuilderActive(value) {
+    towerBuilderActive = value;
 }
 
 async function submitFinalScore() {
