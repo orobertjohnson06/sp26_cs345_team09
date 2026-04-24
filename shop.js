@@ -69,8 +69,8 @@ const SHOP_ITEMS = [
 ];
 
 let shopOfferedItems = [];
-let shopHovered      = -1;
-let shopErrorUntil   = 0;
+let shopHovered = -1;
+let shopErrorUntil = 0;
 
 // Keys are relic ids, values are p5.Image objects loaded via preload
 const spriteCache = {};
@@ -93,10 +93,10 @@ function relicCost(item) {
 
 function weightedPickN(pool, n) {
   const remaining = [...pool];
-  const picked    = [];
+  const picked = [];
   while (picked.length < n && remaining.length > 0) {
     const totalW = remaining.reduce((s, it) => s + it.weight, 0);
-    let roll     = Math.random() * totalW;
+    let roll = Math.random() * totalW;
     for (let i = 0; i < remaining.length; i++) {
       roll -= remaining[i].weight;
       if (roll <= 0) {
@@ -164,7 +164,7 @@ export function drawShop(recollectionUsed, recollection) {
 
   shopOfferedItems.forEach((item, i) => {
     const { x, y } = cardPosition(i);
-    const hovered  = shopHovered === i;
+    const hovered = shopHovered === i;
     //card background
     fill(hovered ? 55 : 30);
     stroke(hovered ? 210 : 70);
