@@ -91,7 +91,7 @@ export let spin2WinActive = false;
 export let spin2WinBonus = 0.02
 let lastMoveWasHardDrop = false;
 export let turboBoosterActive = false;
-export let turboBoosterBonus = 0.2;
+export let turboBoosterBonus = 0.3;
 export let doubleHoldActive = false;
 export let holdQueue = [];
 

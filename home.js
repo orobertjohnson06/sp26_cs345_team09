@@ -118,6 +118,7 @@ window.draw = function () {
   drawBackground();
   vines.forEach(v => { growVine(v); drawVine(v); });
   particles.forEach(p => updateParticle(p));
+
   drawLogoArea();
   drawMenu();
   if (modalProgress > 0.01) drawOverlay();

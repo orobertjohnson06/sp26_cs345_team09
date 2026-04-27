@@ -138,7 +138,7 @@ export const RELICS = [
     name: "Turbo Booster",
     sprite: "assets/relics/epic_turboboost.png",
     rarity: "EPIC",
-    description: "Hard dropping a piece\nincreases score by +20%.",
+    description: "Hard dropping a piece\nincreases score by +30%.",
     ability(game) {
       game.setTurboBoosterActive(true);
     },
