@@ -85,8 +85,8 @@ let leaderboardLoading = false;
 
 window.preload = function () {
   logoImg = loadImage('logo.png', () => {}, () => { logoImg = null; });
-  titleImg = loadImage('/assets/Relicquae.png', () => {}, () => { titleImg = null; });
-  bgImage = loadImage('/assets/background.png', () => {}, () => { bgImage = null; });
+  titleImg = loadImage('assets/Relicquae.png', () => {}, () => { titleImg = null; });
+  bgImage = loadImage('assets/background.png', () => {}, () => { bgImage = null; });
 }
 
 window.setup =  async function () {
