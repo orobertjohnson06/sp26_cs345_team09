@@ -130,8 +130,10 @@ window.draw = function () {
 
 function drawBackground() {
   console.log(windowWidth, ' ' ,windowHeight);
-  //background(C.bg);
-  background(bgImage);
+  background(C.bg);
+   if (bgImage instanceof p5.Image && bgImage.width > 0) {
+    image(bgImage, 0, 0, width, height);
+  }
   push();
   const g = drawingContext.createRadialGradient(width / 2, height, 0, width / 2, height, height * 1.1);
   g.addColorStop(0, 'rgba(14,48,18,0.9)');
