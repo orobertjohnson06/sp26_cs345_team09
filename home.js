@@ -131,7 +131,7 @@ window.draw = function () {
 function drawBackground() {
   console.log(windowWidth, ' ' ,windowHeight);
   background(C.bg);
-   if (bgImage instanceof p5.Image && bgImage.width > 0) {
+  if (bgImage !== null && bgImage !== undefined) {
     image(bgImage, 0, 0, width, height);
   }
   push();
