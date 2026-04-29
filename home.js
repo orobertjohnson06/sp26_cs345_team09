@@ -84,7 +84,7 @@ let leaderboardData = [];
 let leaderboardLoading = false;
 
 window.preload = function () {
-  logoImg = loadImage('logo.png', () => {}, () => { logoImg = null; });
+  logoImg = loadImage('assets/logo.png', () => {}, () => { logoImg = null; });
   titleImg = loadImage('assets/Relicquae.png', () => {}, () => { titleImg = null; });
   bgImage = loadImage('assets/background.png', () => {}, () => { bgImage = null; });
 }
