@@ -130,7 +130,7 @@ window.draw = function () {
 
 function drawBackground() {
   console.log(windowWidth, ' ' ,windowHeight);
-  background(C.bg);
+  //background(C.bg);
   background(bgImage);
   push();
   const g = drawingContext.createRadialGradient(width / 2, height, 0, width / 2, height, height * 1.1);
