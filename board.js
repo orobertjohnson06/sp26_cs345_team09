@@ -1,6 +1,8 @@
 import { initFirebase, submitScore } from './firebase.js';
 import { initShop, drawShop, shopMouseMoved, shopMouseClicked, shopKeyPressed, preloadRelicSprites } from './shop.js';
 import {BOSSES} from './boss.js';
+import { RelicMenu } from './Relicmenu.js'
+
 const ROWS = 20;
 const COLS = 10;
 const BOX_SIZE = 32;
@@ -80,25 +82,33 @@ let binds = [
   {action:'Pause', key:'P'},
 ];
 let keyMap = {};
+let relicMenu;
 
 //relic vars
-export let sqrBonus = 0;
-export let sqrBonusActive = false;
-export let PerfectionBonus = 0;
-export let scoreMultiBonus = 1;
-export let comboLineActive = false;
-export let comboStreak = 0;
-export let comboLineBonus = 0.5;
-export let towerBuilderActive = false;
-export let towerBuilderBonus = 0.4;
-let currentPieceRotations = 0;
-export let spin2WinActive = false;
-export let spin2WinBonus = 0.02
+let slowed = false;
+let sqrBonus = 0;
+let sqrBonusActive = false;
+let PerfectionBonus = 0;
+let perfectionActive = false;
+let scoreMultiActive = false;
+let scoreMultiBonus = 1;
+let comboLineActive = false;
+let comboStreak = 0;
+let comboLineBonus = 0.5;
+let spin2WinActive = false;
+let spin2WinBonus = 0.02
+let turboBoosterActive = false;
 let lastMoveWasHardDrop = false;
-export let turboBoosterActive = false;
-export let turboBoosterBonus = 0.3;
-export let doubleHoldActive = false;
-export let holdQueue = [];
+let turboBoosterBonus = 0.3;
+let scoreAdd = 0;
+//not implemented
+let towerBuilderActive = false;
+let towerBuilderBonus = 0.4;
+let doubleHoldActive = false;
+let holdQueue = [];
+// til here
+let currentPieceRotations = 0;
+
 
 const HORIZONTAL_REPEAT_DELAY = 140;
 const HORIZONTAL_REPEAT_INTERVAL = 55;
@@ -109,7 +119,21 @@ const STAGE_INTRO_FADE_IN = 500;
 const STAGE_INTRO_HOLD = 700;
 const STAGE_INTRO_FADE_OUT = 500;
 const STAGE_INTRO_DURATION = STAGE_INTRO_FADE_IN + STAGE_INTRO_HOLD + STAGE_INTRO_FADE_OUT;
-//switched to millis which counts milliseconds instead of frameCount so we can track in time instead of converting and manipulating draw speeds
+
+//relic methods
+const game = {
+    sqrBonusActive,
+    slowed,
+    perfectionActive,
+    scoreMultiActive,
+    comboLineActive,
+    towerBuilderActive,
+    spin2WinActive,
+    turboBoosterActive,
+    doubleHoldActive,
+    scoreAdd,
+}
+
 window.setup = async function() {
     createCanvas(windowWidth, windowHeight);
     await initFirebase();
@@ -130,8 +154,37 @@ window.setup = async function() {
     activePiece = spawnPiece();
     lastDrop = millis();
     beginStageIntro("standard");
+    relicMenu = new RelicMenu(relicsHeld, recollection, (_r) => {
+        console.log("e");
+        applyRelics();
+    });
 }
 
+function applyRelics() {
+    game.sqrBonusActive = false;
+    game.perfectionActive = false;
+    game.scoreMultiActive = false;
+    game.comboLineActive = false;
+    game.towerBuilderActive = false;
+    game.spin2WinActive = false;
+    game.turboBoosterActive = false;
+    game.doubleHoldActive = false;
+    game.scoreAdd = 0;
+
+    relicsHeld.forEach(relic => {
+        relic.ability(game);
+    });
+    // Sync back
+    sqrBonusActive = game.sqrBonusActive;
+    perfectionActive = game.perfectionActive;
+    scoreMultiActive = game.scoreMultiActive;
+    comboLineActive = game.comboLineActive;
+    towerBuilderActive = game.towerBuilderActive;
+    spin2WinActive = game.spin2WinActive;
+    turboBoosterActive = game.turboBoosterActive;
+    doubleHoldActive = game.doubleHoldActive;
+    scoreAdd = game.scoreAdd;
+}
 window.draw = function() {
     background(30);
     if (gameState === "stageIntro") {
@@ -156,6 +209,7 @@ window.draw = function() {
     if (gameState === "shop") drawShop(recollectionUsed, recollection);
     if (gameOver) drawGameOver();
     if (paused) drawPaused();
+    if (relicMenu) relicMenu.draw();
 }
 window.preload = function() {
   preloadRelicSprites();
@@ -386,14 +440,16 @@ function clearLines() {
             board.unshift(Array(COLS).fill(null));
             cleared++;
             r++;
+            //scoreMultiBonus increment
+            if(scoreMultiActive) scoreMultiBonus += 0.05;
         }
     }
+    if(perfectionActive && cleared == 4) PerfectionBonus += 20;
     return cleared;
 }
 
 function updateScore(cleared) {
     linesCleared += cleared;
-
     let pointsGained = POINTS[cleared] || 0;
     //combo line check
     if (comboLineActive) {
@@ -421,13 +477,14 @@ function updateScore(cleared) {
         pointsGained *= spinMultiplier;
     }
 
-
+    //test
+    console.log(scoreAdd);
+    score += scoreAdd;
     //score modifiers
     score += pointsGained;
-
-    score += sqrBonus;
-    score += PerfectionBonus;
-    score *= scoreMultiBonus;
+    if(sqrBonusActive) score += sqrBonus;  
+    if(perfectionActive) score += PerfectionBonus;
+    if(scoreMultiActive) score *= scoreMultiBonus;
 
     if (score >= scoreRequirement) {
         updateLevel();
@@ -471,6 +528,8 @@ function updateLevel() {
     beginStageIntro("shop");
     softReset();
     //drop interval decreases based on Stage (and level?)
+    let amt = Math.max(80, BASE_DROP_INTERVAL - (stage - 1) * 100)
+    dropInterval = slowed ? amt : amt * 0.8;
 }
 
 function activateBoss() {
@@ -1175,6 +1234,7 @@ function rebuildKeyMap() {
 
 window.mouseMoved = function() {
     if (gameState === "shop") shopMouseMoved();
+    relicMenu.mouseMoved();
 }
 
 window.mousePressed = function() {
@@ -1202,6 +1262,7 @@ window.mousePressed = function() {
         return;
     }
     if (gameState === "shop") shopMouseClicked(getShopGameState());
+    if (relicMenu) relicMenu.mousePressed();
 }
 
 window.keyPressed = function() {
@@ -1283,15 +1344,14 @@ window.keyPressed = function() {
                 }
                 currentPieceRotations++;
                 resetLockDelay();
-                break;
-            } 
+            }
+            break;
         case "Hard Drop" :
             let dropped = 0;
             while (tryMove(activePiece, 0, BOX_SIZE)) dropped++;
             score += dropped * 2;
             //turbo_booster relic
             lastMoveWasHardDrop = true;
-
             lockPiece();
             break;
         case "Hold Piece" :
@@ -1326,7 +1386,8 @@ window.mouseDragged = function() {
     const s = settingsSliders[dragSlider.index];
     const dx = mouseX - dragSlider.startX;
     s.value = constrain(dragSlider.startVal + round(dx / dragSlider.trackW * 100), 0, 100);
-  }
+    relicMenu.mouseDragged();
+}
 
 window.mouseReleased = function() {
     dragSlider = null;
@@ -1337,6 +1398,7 @@ window.mouseWheel = function(event) {
         kbScrollY = constrain(kbScrollY - event.delta * 0.4, -(binds.length * 36 - 180), 0);
         return false;
     }
+    return relicMenu.mouseWheel(e);
 }
 // restarts the game
 function resetGame() {
@@ -1375,6 +1437,7 @@ function resetGame() {
     settingsTab = "general";
     kbScrollY = 0;
     dragSlider = null;
+<<<<<<< HEAD
     
     // reset relic effects
     relicsHeld = [];
@@ -1398,6 +1461,12 @@ function resetGame() {
     doubleHoldActive = false;
     holdQueue = [];
 
+=======
+    relicMenu = new RelicMenu(relicsHeld, recollection, (_r) => {
+        console.log("e");
+        applyRelics();
+    });
+>>>>>>> 28b2db5163587fcd9b220406118349e50caa0c03
     cancelSettingsListen();
     nextType = randomPiece();
     activePiece  = spawnPiece();
@@ -1438,6 +1507,8 @@ window.windowResized = function() {
 function closeShop() {
     gameState = "standard";
     softReset();
+    const amt = Math.max(80, BASE_DROP_INTERVAL - (stage - 1) * 100)
+    dropInterval = slowed ? amt : amt * 0.8;
 }
 
 function setBinds() {
@@ -1458,9 +1529,10 @@ function getPlayerName() {
   return playerName;
 }
 //setters
-export function addSqrBonus(amount) {
+function addSqrBonus(amount) {
     sqrBonus += amount;
 }
+<<<<<<< HEAD
 
 export function setSqrBonusActive(value) {
     sqrBonusActive = value;
@@ -1494,6 +1566,8 @@ export function setDoubleHoldActive(value) {
     doubleHoldActive = value;
 }
 //boss setters
+=======
+>>>>>>> 28b2db5163587fcd9b220406118349e50caa0c03
 export function setNoRotate(value) {
     noRotate = value;
 }
@@ -1532,7 +1606,7 @@ function getShopGameState() {
         noRotate,
         recollectionUsed,
         recollection,
-        relicsHeld,
+        relicsHeld, 
 
         sqrBonus,
         PerfectionBonus,
@@ -1542,6 +1616,7 @@ function getShopGameState() {
         addPerfectionBonus,
         addScoreMultiBonus,
 
+<<<<<<< HEAD
         setComboLineActive,
         setTowerBuilderActive,
         setSpin2WinActive,
@@ -1551,6 +1626,8 @@ function getShopGameState() {
         setDropInterval,
         setScoreRequirement,
 
+=======
+>>>>>>> 28b2db5163587fcd9b220406118349e50caa0c03
         closeShop
     };
 }
