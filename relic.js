@@ -60,11 +60,7 @@ export const RELICS = [
     rarity: "COMMON",
     description: "essence of the ice age.",
     ability(game) {
-<<<<<<< HEAD
-      game.setDropInterval(1.2);
-=======
       game.slowed = this.active;
->>>>>>> 28b2db5163587fcd9b220406118349e50caa0c03
     },
   }),
 
@@ -75,11 +71,7 @@ export const RELICS = [
     rarity: "COMMON",
     description: "every placed square increases this score bonus by 2",
     ability(game) {
-<<<<<<< HEAD
-      game.setSqrBonusActive(true);
-=======
       game.sqrBonusActive = this.active;
->>>>>>> 28b2db5163587fcd9b220406118349e50caa0c03
     },
   }),
 
@@ -90,11 +82,7 @@ export const RELICS = [
     rarity: "COMMON",
     description: "every tetris increases this score bonus by 20",
     ability(game) {
-<<<<<<< HEAD
-      game.addPerfectionBonus(20);
-=======
       game.perfectionActive = this.active;
->>>>>>> 28b2db5163587fcd9b220406118349e50caa0c03
     },
   }),
 
@@ -105,17 +93,10 @@ export const RELICS = [
     rarity: "COMMON",
     description: "Increases score by +5% per line cleared",
     ability(game) {
-<<<<<<< HEAD
-      game.addScoreMultiBonus(0.05);
-    }
-    },
-  ),
-=======
       game.scoreMultiActive = this.active;
     },
   }),
 
->>>>>>> 28b2db5163587fcd9b220406118349e50caa0c03
   new Relic({
     id: "combo_line",
     name: "Combo Line",
