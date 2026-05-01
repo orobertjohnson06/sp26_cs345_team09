@@ -31,6 +31,7 @@ let paused = false;
 let dropInterval = 500;
 let lastDrop = 0;
 let holdType = null;
+let holdType2 = null;
 let holdUsed = false;
 let noRotate = false;
 let costlyRotate = false;
@@ -105,7 +106,6 @@ let scoreAdd = 0;
 let towerBuilderActive = false;
 let towerBuilderBonus = 0.4;
 let doubleHoldActive = false;
-let holdQueue = [];
 // til here
 let currentPieceRotations = 0;
 
@@ -398,19 +398,43 @@ function lockPiece() {
 }
 
 function holdPiece() {
-    if (!activePiece || holdUsed) return;
+    if (!activePiece) return;
 
+    if (!doubleHoldActive) {
+
+        if (holdUsed) return;
+
+        const currentType = activePiece.type;
+
+        if (holdType === null) {
+            holdType = currentType;
+            activePiece = spawnPiece();
+        } else {
+            const swapType = holdType;
+            holdType = currentType;
+            activePiece = spawnPieceOfType(swapType);
+        }
+
+        holdUsed = true;
+        return;
+    }
+    //holder relic
     const currentType = activePiece.type;
+
     if (holdType === null) {
         holdType = currentType;
         activePiece = spawnPiece();
+    } else if (holdType2 === null) {
+        holdType2 = currentType;
+        activePiece = spawnPiece();
     } else {
+        // cycle between holds
         const swapType = holdType;
-        holdType = currentType;
+        holdType = holdType2;
+        holdType2 = currentType;
         activePiece = spawnPieceOfType(swapType);
     }
 
-    holdUsed = true;
     lockStartedAt = 0;
     lastDrop = millis();
 }
@@ -447,6 +471,11 @@ function updateScore(cleared) {
         }
     }
 
+    // Tower Builder relic
+    if (towerBuilderActive && cleared > 0 && isTowerAbove60Percent()) {
+        pointsGained *= 1 + towerBuilderBonus;
+    }
+
     // Turbo Booster relic
     if (turboBoosterActive && lastMoveWasHardDrop && cleared > 0) {
         pointsGained *= 1 + turboBoosterBonus;
@@ -470,6 +499,18 @@ function updateScore(cleared) {
     if (score >= scoreRequirement) {
         updateLevel();
     }
+}
+
+function isTowerAbove60Percent() {
+    const limitRow = Math.floor(ROWS * 0.4);
+
+    for (let r = 0; r <= limitRow; r++) {
+        if (board[r].some(cell => cell !== null)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function updateLevel() {
@@ -654,6 +695,25 @@ function drawSidebar() {
     drawPreviewPiece(holdType, holdPreviewX, holdPreviewY);
 
     fill(255);
+    //holder relic draw 2nd held
+    if (doubleHoldActive) {
+        const gap = 12;
+        const hold2X = holdPreviewX - previewW - gap;
+        const hold2Y = holdPreviewY;
+
+        fill(255);
+        noStroke();
+        textSize(14);
+        text("HOLD 2", hold2X, panelY);
+
+        fill(15);
+        noStroke();
+        rect(hold2X, hold2Y, previewW, previewH);
+
+        drawPreviewPiece(holdType2, hold2X, hold2Y);
+
+        fill(255);
+    }
 
     // GOAL
     textSize(14); text("GOAL", leftPanelX, panelY + 160);
@@ -1367,7 +1427,7 @@ window.mouseWheel = function(event) {
         kbScrollY = constrain(kbScrollY - event.delta * 0.4, -(binds.length * 36 - 180), 0);
         return false;
     }
-    return relicMenu.mouseWheel(e);
+    return relicMenu.mouseWheel(event);
 }
 // restarts the game
 function resetGame() {
@@ -1388,6 +1448,7 @@ function resetGame() {
     paused = false;
     pauseSettingsOpen = false;
     holdType = null;
+    holdType2 = null;
     holdUsed = false;
     leftHeld = false;
     rightHeld = false;
