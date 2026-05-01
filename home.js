@@ -33,7 +33,7 @@ const buttonHover = {start:0, settings:0, leaderboard:0, quit:0};
 const MENU_BTNS = [
   {id:'start', label:'START', style:'start'},
   {id:'settings', label:'SETTINGS', style:'settings'},
-  {id:'leaderboard', label:'LEADER BOARD', style:'leaderboard'},
+  {id:'leaderboard', label:'LEADERBOARD', style:'leaderboard'},
   {id:'quit', label:'QUIT', style:'quit'},
 ];
 const BTN_STYLES = {
