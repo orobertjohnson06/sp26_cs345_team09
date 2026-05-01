@@ -1,5 +1,6 @@
 import { initFirebase, submitScore } from './firebase.js';
 import { initShop, drawShop, shopMouseMoved, shopMouseClicked, shopKeyPressed, preloadRelicSprites } from './shop.js';
+import {BOSSES} from './boss.js';
 const ROWS = 20;
 const COLS = 10;
 const BOX_SIZE = 32;
@@ -7,7 +8,6 @@ const BOARD_W = COLS * BOX_SIZE;
 const BOARD_H = ROWS * BOX_SIZE;
 const PIECE_TYPES = ["4Line", "L", "BackL", "T", "S", "Z", "2by2"];
 const POINTS = [0, 100, 300, 500, 800];
-const BOSSES = ["rotate"];
 const SPRITES = {};
 const DEFAULT_RECOLLECTION = 5;
 
@@ -35,7 +35,9 @@ let pieceBag = 30;
 let numLockedPieces = 0;
 let recollection = DEFAULT_RECOLLECTION;
 let recollectionUsed = 0;
+let currentBoss = false;
 export let relicsHeld = [];
+export let nextBoss = [];
 
 // gameState will tell the program what should be rendered and processed
 // valid states: menu, standard, boss, shop, stageIntro
@@ -413,7 +415,7 @@ function updateLevel() {
     }
 
     if (level === 3) {
-        noRotate = false;
+        deactivateBoss();
         level = 1;
         pieceBag += 15;
         scoreRequirement *= scoreFactor;
@@ -421,6 +423,7 @@ function updateLevel() {
         scoreFactor *= 2;
         recollection++;
         stage++
+        dropInterval = Math.max(80, BASE_DROP_INTERVAL - (stage - 1) * 100);
     } else {
         level++;
         scoreRequirement += scoreIncrement;
@@ -429,27 +432,28 @@ function updateLevel() {
     beginStageIntro("shop");
     softReset();
     //drop interval decreases based on Stage (and level?)
-    dropInterval = Math.max(80, BASE_DROP_INTERVAL - (stage - 1) * 100);
 }
 
 function activateBoss() {
     if (skipNextBoss) {
         skipNextBoss = false;
+        currentBoss = false;
         return;
     }
-    let boss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
-    switch (boss) {
-        case "rotate" : 
-            noRotate = true;
-            break;
-    }
+    currentBoss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
+    currentBoss.activate();
+}
+    function deactivateBoss() {
+        if (currentBoss) {
+            currentBoss.deactivate();
+            currentBoss = false;
+        }
 }
 
 function getHindranceText() {
-    const hindrances = [];
-    if (noRotate) hindrances.push("No Rotates");
-    if (hindrances.length === 0) return "None";
-    return hindrances.join(", ");
+    if (currentBoss) {
+        return currentBoss.name;
+    }
 }
 
 
@@ -603,7 +607,7 @@ function drawSidebar() {
     // HINDRANCE
     textSize(14); text("HINDRANCE", leftPanelX, panelY + 420);
     textSize(18);
-    fill(noRotate ? color(255, 110, 110) : color(220));
+    fill(currentBoss ? color(255, 110, 110) : color(220));
     text(getHindranceText(), leftPanelX, panelY + 445, previewW + 24, 44);
 
     fill(255);
@@ -1365,7 +1369,6 @@ window.windowResized = function() {
 function closeShop() {
     gameState = "standard";
     softReset();
-    dropInterval = Math.max(80, BASE_DROP_INTERVAL - (stage - 1) * 100);
 }
 
 function setBinds() {
@@ -1403,6 +1406,12 @@ export function setTurboBoosterActive(value) {
 }
 export function setDoubleHoldActive(value) {
     doubleHoldActive = value;
+}
+export function setNoRotate(value) {
+    noRotate = value;
+}
+export function setDropInterval(value) {
+    dropInterval *= value;
 }
 
 async function submitFinalScore() {
