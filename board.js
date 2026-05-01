@@ -322,7 +322,8 @@ function lockPiece() {
             board[row][col] = {color : activePiece.color};
 
     });
-    updateScore(clearLines());
+    const cleared = clearLines();
+    updateScore(cleared);
     //spin2win relic
     currentPieceRotations = 0;
     //turbo_booster relic
@@ -335,18 +336,30 @@ function lockPiece() {
         submitFinalScore();
         return;
     }
-    if (sqrBonusActive && activePiece.type === '2by2') addSqrBonus(2);
+    if (sqrBonusActive && activePiece.type === '2by2') {
+        addSqrBonus(2);
+    } 
+    if (cleared === 4) {
+        PerfectionBonus += 20;
+    }
+
     activePiece = spawnPiece();
     holdUsed = false;
+    holdQueue = [];
     lockStartedAt = 0;
     lastDrop = millis();
 
 }
 
 function holdPiece() {
-    if (!activePiece || holdUsed) return;
+    if (!activePiece) return;
+
+    const maxHolds = doubleHoldActive ? 2 : 1;
+    if (holdQueue.length >= maxHolds) return;
+
 
     const currentType = activePiece.type;
+
     if (holdType === null) {
         holdType = currentType;
         activePiece = spawnPiece();
@@ -356,7 +369,9 @@ function holdPiece() {
         activePiece = spawnPieceOfType(swapType);
     }
 
-    holdUsed = true;
+    holdQueue.push(currentType);
+    holdUsed = holdQueue.length >= maxHolds;
+
     lockStartedAt = 0;
     lastDrop = millis();
 }
@@ -383,12 +398,16 @@ function updateScore(cleared) {
     //combo line check
     if (comboLineActive) {
         if (cleared > 0) {
-            comboStreak++;
             const comboMultiplier = 1 + comboLineBonus * comboStreak;
             pointsGained *= comboMultiplier;
+            comboStreak++;
         } else {
             comboStreak = 0;
         }
+    }
+    //towerbuilder relic
+    if (towerBuilderActive && cleared > 0 && isTowerAbove60Percent()) {
+        pointsGained *= 1 + towerBuilderBonus;
     }
 
     // Turbo Booster relic
@@ -413,6 +432,18 @@ function updateScore(cleared) {
     if (score >= scoreRequirement) {
         updateLevel();
     }
+}
+//tower builder function
+function isTowerAbove60Percent() {
+    const limitRow = Math.floor(ROWS * 0.4);
+
+    for (let r = 0; r <= limitRow; r++) {
+        if (board[r].some(cell => cell !== null)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function updateLevel() {
@@ -1310,6 +1341,7 @@ window.mouseWheel = function(event) {
 // restarts the game
 function resetGame() {
     board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+    totalScore = 0;
     score = 0;
     scoreRequirement = 500;
     scoreIncrement = 250;
@@ -1319,7 +1351,6 @@ function resetGame() {
     linesCleared = 0;
     numLockedPieces = 0;
     recollectionUsed = 0;
-    relicsHeld = [];
     recollection = DEFAULT_RECOLLECTION;
     dropInterval = BASE_DROP_INTERVAL;
     gameOver = false;
@@ -1339,18 +1370,41 @@ function resetGame() {
     nextHorizontalMove = 0;
     nextSoftDrop = 0;
     lockStartedAt = 0;
-    pauseSettingsOpen = false;
     settingsModalOpen = false;
     settingsModalProgress = 0;
     settingsTab = "general";
     kbScrollY = 0;
     dragSlider = null;
+    
+    // reset relic effects
+    relicsHeld = [];
+
+    sqrBonus = 0;
+    sqrBonusActive = false;
+    PerfectionBonus = 0;
+    scoreMultiBonus = 1;
+
+    comboLineActive = false;
+    comboStreak = 0;
+
+    towerBuilderActive = false;
+
+    spin2WinActive = false;
+    currentPieceRotations = 0;
+
+    turboBoosterActive = false;
+    lastMoveWasHardDrop = false;
+
+    doubleHoldActive = false;
+    holdQueue = [];
+
     cancelSettingsListen();
     nextType = randomPiece();
     activePiece  = spawnPiece();
     lastDrop = millis();
     beginStageIntro("standard");
     scoreSubmitted = false;
+
 }
 // restarts the game, but keeps various variables. Used for progressing levels and stages.
 function softReset() {
@@ -1407,21 +1461,39 @@ function getPlayerName() {
 export function addSqrBonus(amount) {
     sqrBonus += amount;
 }
+
+export function setSqrBonusActive(value) {
+    sqrBonusActive = value;
+}
+
+export function addPerfectionBonus(amount) {
+    PerfectionBonus += amount;
+}
+
+export function addScoreMultiBonus(amount) {
+    scoreMultiBonus += amount;
+}
+
 export function setComboLineActive(value) {
     comboLineActive = value;
 }
+
 export function setTowerBuilderActive(value) {
     towerBuilderActive = value;
 }
+
 export function setSpin2WinActive(value) {
     spin2WinActive = value;
 }
+
 export function setTurboBoosterActive(value) {
     turboBoosterActive = value;
 }
+
 export function setDoubleHoldActive(value) {
     doubleHoldActive = value;
 }
+//boss setters
 export function setNoRotate(value) {
     noRotate = value;
 }
@@ -1466,12 +1538,18 @@ function getShopGameState() {
         PerfectionBonus,
         scoreMultiBonus,
         addSqrBonus,
+        setSqrBonusActive,
+        addPerfectionBonus,
+        addScoreMultiBonus,
 
         setComboLineActive,
         setTowerBuilderActive,
         setSpin2WinActive,
         setTurboBoosterActive,
         setDoubleHoldActive,
+
+        setDropInterval,
+        setScoreRequirement,
 
         closeShop
     };
