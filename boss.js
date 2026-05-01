@@ -1,4 +1,4 @@
-import { setNoRotate, setDropInterval } from "./board.js";
+import { setNoRotate, setDropInterval, setScoreRequirement, setCostlyRotate, setStealthyPieces, setLimitedVision } from "./board.js";
 class Boss {
   /**
    * @param {object} config
@@ -51,5 +51,54 @@ export const BOSSES = [
         // drop interval is set automatically after boss level. no need to reset.
         return;
     }
+  }),
+  new Boss({
+    id: "high_score",
+    name: "High Score",
+    sprite: "no sprite!",
+    description: "Score requirement is much higher.",
+    ability() {
+        setScoreRequirement(2.5);
+    },
+    end() {
+        setScoreRequirement(0.4);
+    }
+  }),
+  new Boss({
+    id: "costly_rotate",
+    name: "Costly Rotate",
+    sprite: "no sprite!",
+    description: "It costs score to rotate pieces.",
+    ability() {
+        setCostlyRotate(true);
+    },
+    end() {
+        setCostlyRotate(false);
+    }
+  }),
+  new Boss({
+    id: "stealthy_pieces",
+    name: "Stealthy Pieces",
+    sprite: "no sprite!",
+    description: "Piece preview is no longer visible.",
+    ability() {
+        setStealthyPieces(true);
+    },
+    end() {
+        setStealthyPieces(false);
+    }
+  }),
+  new Boss({
+    id: "limited_vision",
+    name: "Limited Vision",
+    sprite: "no sprite!",
+    description: "You can only see near the active piece.",
+    ability() {
+        setLimitedVision(true);
+    },
+    end() {
+        setLimitedVision(false);
+    }
   })
+  
 ];
