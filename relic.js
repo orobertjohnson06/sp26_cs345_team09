@@ -1,14 +1,11 @@
 export const RARITY = Object.freeze({
-  COMMON: {label: "Common", color: "#b0b0b0", spawnWeight: 60},
-  RARE: {label: "Rare", color: "#2196f3", spawnWeight: 25},
-  EPIC: {label: "Epic", color: "#9c27b0", spawnWeight:  10},
-  LEGENDARY: {label: "Legendary", color: "#ff9800", spawnWeight: 4},
+  COMMON: {label: "Common", color: "#b0b0b0", spawnWeight: 20},
+  RARE: {label: "Rare", color: "#2196f3", spawnWeight: 10},
+  EPIC: {label: "Epic", color: "#9c27b0", spawnWeight:  5},
+  LEGENDARY: {label: "Legendary", color: "#ff9800", spawnWeight: 3},
   UNIQUE: {label: "Unique", color: "#d40e95", spawnWeight: 1}
 });
 
-const TOTAL_WEIGHT = Object.values(RARITY).reduce(
-  (sum, r) => sum + r.spawnWeight, 0
-);
 
 class Relic {
   /**
@@ -58,7 +55,7 @@ export const RELICS = [
     name: "Slow Down",
     sprite: "assets/relics/common_slowdown.png",
     rarity: "COMMON",
-    description: "essence of the ice age.",
+    description: "Slows the speed of pieces falling by 25%",
     ability(game) {
       game.slowed = this.active;
     },
@@ -69,20 +66,20 @@ export const RELICS = [
     name: "Square squared",
     sprite: "assets/relics/common_squaresquared.png",
     rarity: "COMMON",
-    description: "every placed square increases this score bonus by 2",
+    description: "Each square piece placed grants +2 more bonus points than the last",
     ability(game) {
       game.sqrBonusActive = this.active;
     },
   }),
 
   new Relic({
-    id: "perfectionist",
-    name: "Perfectionist",
-    sprite: "assets/relics/common_perfectionist.png",
+    id: "rock_bottom",
+    name: "Rock Bottom",
+    sprite: "assets/relics/common_rockbottom.png",
     rarity: "COMMON",
-    description: "every tetris increases this score bonus by 20",
+    description: "Grants +20% score for pieces placed within the bottom 2 rows.",
     ability(game) {
-      game.perfectionActive = this.active;
+      game.rockBottomActive = this.active;
     },
   }),
 

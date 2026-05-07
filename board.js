@@ -89,8 +89,8 @@ let relicMenu;
 let slowed = false;
 let sqrBonus = 0;
 let sqrBonusActive = false;
-let PerfectionBonus = 0;
-let perfectionActive = false;
+let rockBottomBonus = .15;
+let rockBottomActive = false;
 let scoreMultiActive = false;
 let scoreMultiBonus = 1;
 let comboLineActive = false;
@@ -124,7 +124,7 @@ const STAGE_INTRO_DURATION = STAGE_INTRO_FADE_IN + STAGE_INTRO_HOLD + STAGE_INTR
 const game = {
     sqrBonusActive,
     slowed,
-    perfectionActive,
+    rockBottomActive,
     scoreMultiActive,
     comboLineActive,
     towerBuilderActive,
@@ -162,7 +162,7 @@ window.setup = async function() {
 
 function applyRelics() {
     game.sqrBonusActive = false;
-    game.perfectionActive = false;
+    game.rockBottomActive = false;
     game.scoreMultiActive = false;
     game.comboLineActive = false;
     game.towerBuilderActive = false;
@@ -176,7 +176,7 @@ function applyRelics() {
     });
     // Sync back
     sqrBonusActive = game.sqrBonusActive;
-    perfectionActive = game.perfectionActive;
+    rockBottomActive = game.rockBottomActive;
     scoreMultiActive = game.scoreMultiActive;
     comboLineActive = game.comboLineActive;
     towerBuilderActive = game.towerBuilderActive;
@@ -453,7 +453,6 @@ function clearLines() {
             if(scoreMultiActive) scoreMultiBonus += 0.05;
         }
     }
-    if(perfectionActive && cleared == 4) PerfectionBonus += 20;
     return cleared;
 }
 
@@ -493,7 +492,7 @@ function updateScore(cleared) {
     //score modifiers
     score += pointsGained;
     if(sqrBonusActive) score += sqrBonus;  
-    if(perfectionActive) score += PerfectionBonus;
+    if(rockBottomActive && isTowerBelow30Percent()) score *= 1 + rockBottomBonus;
     if(scoreMultiActive) score *= scoreMultiBonus;
 
     if (score >= scoreRequirement) {
@@ -504,7 +503,19 @@ function updateScore(cleared) {
 function isTowerAbove60Percent() {
     const limitRow = Math.floor(ROWS * 0.4);
 
-    for (let r = 0; r <= limitRow; r++) {
+    for (let r = 0; r < limitRow; r++) {
+        if (board[r].some(cell => cell !== null)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function isTowerBelow30Percent() {
+    const limitRow = Math.floor(ROWS * 0.7);
+
+    for (let r = limitRow; r < ROWS; r++) {
         if (board[r].some(cell => cell !== null)) {
             return true;
         }
@@ -539,7 +550,7 @@ function updateLevel() {
     softReset();
     //drop interval decreases based on Stage (and level?)
     let amt = Math.max(80, BASE_DROP_INTERVAL - (stage - 1) * 100)
-    dropInterval = slowed ? amt : amt * 0.8;
+    dropInterval = slowed ? amt : amt * 1.25;
 }
 
 function activateBoss() {
