@@ -90,25 +90,25 @@ let relicMenu;
 let slowed = false;
 let sqrBonus = 0;
 let sqrBonusActive = false;
-let rockBottomBonus = .15;
+let rockBottomBonus = 0.2;
 let rockBottomActive = false;
 let scoreMultiActive = false;
-let scoreMultiBonus = 1;
+let scoreMultiBonus = 0.05;
 let cleanerActive = false;
-let cleanerBonus = 2
+let cleanerBonus = 1;
 let comboLineActive = false;
 let comboStreak = 0;
 let comboLineBonus = 0.5;
 let spin2WinActive = false;
-let spin2WinBonus = 0.02
 let turboBoosterActive = false;
 let lastMoveWasHardDrop = false;
-let turboBoosterBonus = 0.3;
+let turboBoosterBonus = 0.2;
 let scoreAdd = 0;
 let towerBuilderActive = false;
-let towerBuilderBonus = 0.3;
+let towerBuilderBonus = 1.4;
+let swanSongActive = false;
+let swanSongBonus = 2.5;
 let stackMasterActive = false;
-let stackMasterBonus = 1;
 let extraFirepowerActive = false;
 let bubbleUpActive = false;
 let letsGoGamblingActive = false;
@@ -119,6 +119,7 @@ let duplicatorActive = false;
 let doubleHoldActive = false;
 // til here
 let currentPieceRotations = 0;
+let topClearedRow = ROWS;
 
 
 const HORIZONTAL_REPEAT_DELAY = 140;
@@ -144,6 +145,7 @@ const game = {
     cleanerActive,
     comboLineActive,
     towerBuilderActive,
+    swanSongActive,
     stackMasterActive,
     extraFirepowerActive,
     spin2WinActive,
@@ -185,6 +187,7 @@ function applyRelics() {
     game.comboLineActive = false;
     game.cleanerActive = false;
     game.towerBuilderActive = false;
+    game.swanSongActive = false;
     game.stackMasterActive = false;
     game.bubbleUpActive = false;
     game.letsGoGamblingActive = false;
@@ -205,6 +208,7 @@ function applyRelics() {
     scoreMultiActive = game.scoreMultiActive;
     comboLineActive = game.comboLineActive;
     towerBuilderActive = game.towerBuilderActive;
+    swanSongActive = game.swanSongActive;
     stackMasterActive = game.stackMasterActive;
     bubbleUpActive = game.bubbleUpActive;
     letsGoGamblingActive = game.letsGoGamblingActive;
@@ -485,7 +489,7 @@ function holdPiece() {
 
 function clearLines() {
     let cleared = 0;
-    let topClearedRow = ROWS; // tracks the highest row index that was cleared
+    topClearedRow = ROWS; // tracks the highest row index that was cleared
 
     // Step 1: Clear full lines
     for (let r = ROWS - 1; r >= 0; r--) {
@@ -494,7 +498,6 @@ function clearLines() {
             board.unshift(Array(COLS).fill(null));
             cleared++;
             r++;
-            if (scoreMultiActive) scoreMultiBonus += 0.05;
             if (r < topClearedRow) topClearedRow = r;
         }
     }
@@ -532,59 +535,65 @@ function clearLines() {
 
 function updateScore(cleared) {
     linesCleared += cleared;
-    let pointsGained = POINTS[cleared] || 0;
+    let baseScore = POINTS[cleared] || 0;
+    let scoreMulti = 1;
+    
+    // Base Score calculations
 
     // Sqr squared relic
-    if(sqrBonusActive) pointsGained += sqrBonus; 
-
-    // Tower Builder relic
-    if (towerBuilderActive && cleared > 0 && isTowerAbove60Percent()) {
-        pointsGained *= 1 + towerBuilderBonus;
-    }
-
-    // Stack Master relic
-    if (stackMasterActive) {
-        const halfRow = Math.floor(ROWS / 2);
-        const tilesAboveHalf = board.slice(0, halfRow).reduce((count, row) => {
-            return count + row.filter(cell => cell !== null).length;
-        }, 0);
-        pointsGained *= stackMasterBonus + (0.005 * tilesAboveHalf);
-    }
-    
-    // Turbo Booster relic
-    if (turboBoosterActive && lastMoveWasHardDrop && cleared > 0) {
-        pointsGained *= 1 + turboBoosterBonus;
-    }
+    if(sqrBonusActive) baseScore += sqrBonus; 
 
     // Spin 2 Win relic
-    if (spin2WinActive && cleared > 0) {
-        const spinMultiplier = 1 + currentPieceRotations * spin2WinBonus;
-        pointsGained *= spinMultiplier;
+    if (spin2WinActive && currentPieceRotations > 0) {
+        baseScore += 1 * currentPieceRotations;
     }
+
+    // Score Multi Calculations
 
     // Cleaner Relic
     if (cleanerActive && cleared > 0 && board.every(row => row.every(cell => cell === null))) {
-        pointsGained *= cleanerBonus;
+        scoreMulti += cleanerBonus;
+    }   
+
+    // Multi Score relic
+    if(scoreMultiActive) {
+        scoreMulti += scoreMultiBonus * linesCleared;
     }
 
-    //combo line check
+    // Rock Bottom relic
+    if(rockBottomActive && isTowerBelow15Percent()) scoreMulti += rockBottomBonus;
+
+    // Combo Line relic
     if (comboLineActive) {
         if (cleared > 0) {
             comboStreak++;
-            const comboMultiplier = 1 + comboLineBonus * comboStreak;
-            pointsGained *= comboMultiplier;
+            scoreMulti += comboLineBonus * comboStreak;
         } else {
             comboStreak = 0;
         }
     }
 
-    //test
-    console.log(scoreAdd);
-    score += scoreAdd;
-    //score modifiers 
-    if(rockBottomActive && isTowerBelow30Percent()) pointsGained *= 1 + rockBottomBonus;
-    if(scoreMultiActive) pointsGained *= scoreMultiBonus;
-    score += pointsGained;
+    // Turbo Booster relic
+    if (turboBoosterActive && lastMoveWasHardDrop && cleared > 0) {
+        scoreMulti += turboBoosterBonus;
+    }
+
+    //Swan Song relic
+    if (swanSongActive && pieceBag - numLockedPieces <= 0) {
+        scoreMulti *= swanSongBonus;
+    }
+        
+    // Tower Builder relic
+    if (towerBuilderActive && cleared > 0 && topClearedRow < 8) {
+        scoreMulti *= towerBuilderBonus;
+    }
+
+    // Stack Master relic
+    if (stackMasterActive) {
+        scoreMulti *= 1 + (0.005 * howManyTilesAbove50Percent());
+    }
+    
+    score += baseScore * scoreMulti;
 
     if (score >= scoreRequirement) {
         updateLevel();
@@ -603,8 +612,8 @@ function isTowerAbove60Percent() {
     return false;
 }
 
-function isTowerBelow30Percent() {
-    const limitRow = Math.floor(ROWS * 0.7);
+function isTowerBelow15Percent() {
+    const limitRow = Math.floor(ROWS * 0.85);
 
     for (let r = limitRow; r < ROWS; r++) {
         if (board[r].some(cell => cell !== null)) {
@@ -613,6 +622,15 @@ function isTowerBelow30Percent() {
     }
 
     return false;
+}
+
+function howManyTilesAbove50Percent() {
+    const limitRow = Math.floor(ROWS * 0.50);
+    let tilesAboveHalf = 0;
+    for (let r = 0; r < limitRow; r++) {
+        tilesAboveHalf += board[r].filter(cell => cell !== null).length;
+    }
+    return tilesAboveHalf;
 }
 
 function updateLevel() {

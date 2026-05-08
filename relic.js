@@ -54,7 +54,7 @@ export const RELICS = [
     name: "Slow Down",
     sprite: "assets/relics/common_slowdown.png",
     rarity: "COMMON",
-    description: "Slows the speed of pieces falling by 25%.",
+    description: "Slows the descent of pieces by 25%.",
     ability(game) {
       game.slowed = this.active;
     },
@@ -65,7 +65,7 @@ export const RELICS = [
     name: "Square squared",
     sprite: "assets/relics/common_squaresquared.png",
     rarity: "COMMON",
-    description: "Each square piece placed grants +2 more bonus points than the last.",
+    description: "Each square placed grants +2 base score, increasing by +2 every time.",
     ability(game) {
       game.sqrBonusActive = this.active;
     },
@@ -76,7 +76,7 @@ export const RELICS = [
     name: "Rock Bottom",
     sprite: "assets/relics/common_rockbottom.png",
     rarity: "COMMON",
-    description: "Grants +20% score for pieces placed within the bottom 2 rows.",
+    description: "Grants +0.2 score multi for pieces placed on bottom 3 rows.",
     ability(game) {
       game.rockBottomActive = this.active;
     },
@@ -87,7 +87,7 @@ export const RELICS = [
     name: "Score Multi",
     sprite: "assets/relics/common_scoremulti.png",
     rarity: "COMMON",
-    description: "Increases score by +5% per line cleared.",
+    description: "Increases score multi of line clears by +0.05x per line clear this level.",
     ability(game) {
       game.scoreMultiActive = this.active;
     },
@@ -97,7 +97,7 @@ export const RELICS = [
       name: "Cleaner",
       sprite: "assets/relics/common_cleaner.png",
       rarity: "COMMON",
-      description: "Performing a line clear that empties the board increases score gained by +100%.",
+      description: "Performing a line clear that empties the board grants +1 score multi.",
       ability(game) {
         game.cleanerActive = this.active;
       },
@@ -107,18 +107,27 @@ export const RELICS = [
     name: "Combo Line",
     sprite: "assets/relics/rare_comboline.png",
     rarity: "RARE",
-    description: "Every consecutive line clear gains +50% stacking score.",
+    description: "Each consecutive piece that clears a line grants +0.5 score multi.",
     ability(game) {
       game.comboLineActive = this.active;
     },
   }),
-  //not implemented
+  new Relic({
+    id: "swan_song",
+    name: "Swan Song",
+    sprite: "assets/relics/rare_swansong.png",
+    rarity: "RARE",
+    description: "The last piece from your piece bag grants 2.5x score multi.",
+    ability(game) {
+      game.swanSongActive = this.active;
+    },
+  }),
   new Relic({
     id: "tower_builder",
     name: "Tower Builder",
     sprite: "assets/relics/rare_towerbuilder.png",
     rarity: "RARE",
-    description: "If the tower is above 60% of the board lines cleared grant +30% score.",
+    description: "Lines clears with at least one line in the top 8 rows grants 1.4x score multi.",
     ability(game) {
       game.towerBuilderActive = this.active;
     },
@@ -139,7 +148,7 @@ export const RELICS = [
     name: "Turbo Booster",
     sprite: "assets/relics/epic_turboboost.png",
     rarity: "EPIC",
-    description: "Hard dropping a piece\nincreases score by +30%.",
+    description: "Hard dropping a piece to clear a line grants +0.2x score multi.",
     ability(game) {
       game.turboBoosterActive = this.active;
     },
@@ -160,7 +169,7 @@ export const RELICS = [
     name: "Extra Firepower",
     sprite: "assets/relics/epic_extrafirepower.png",
     rarity: "EPIC",
-    description: "Clearing 4 lines at once clears the line above it as well.",
+    description: "Clearing 4 lines at once clears the line above it as well (counts as 5 lines).",
     ability(game) {
       game.extraFirepowerActive = this.active;
     },
@@ -170,7 +179,7 @@ export const RELICS = [
     name: "Stack Master",
     sprite: "assets/relics/epic_stackmaster.png",
     rarity: "EPIC",
-    description: "Grants +0.5% score per tile above the half way point of the board.",
+    description: "Grants +0.5% score multi per tile above the half way point of the board.",
     ability(game) {
       game.stackMasterActive = this.active;
     },
@@ -190,7 +199,7 @@ export const RELICS = [
     name: "Let's Go Gambling!",
     sprite: "assets/relics/legendary_letsgogambling-Sheet-export.png",
     rarity: "LEGENDARY",
-    description: "Getting 3 of the same piece in a row multiplies your score by 1.2x.",
+    description: "Getting the same piece 3 times in a row multiplies your total score for this level by 1.2x.",
     ability(game) {
       game.letsGoGamblingActive = this.active;
     },
@@ -200,7 +209,7 @@ export const RELICS = [
     name: "Duplicator",
     sprite: "assets/relics/unique_duplicator-Sheet-export.png",
     rarity: "UNIQUE",
-    description: "When used, duplicates the current piece to held item without consuming it.",
+    description: "When used, duplicates your current piece and queues it.",
     ability(game) {
       game.duplicatorActive = this.active;
     },
