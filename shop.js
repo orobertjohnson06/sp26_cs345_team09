@@ -127,7 +127,7 @@ export function initShop() {
     ...item,
     rarityColor: "#b0b0b0",
     rarityLabel: "Upgrade",
-    weight: 30,
+    weight: 5,
     isRelic: false,
   }));
 
