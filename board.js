@@ -1,4 +1,4 @@
-import { initFirebase, submitScore } from './firebase.js';
+import { initFirebase, submitScore, loadLeaderboard } from './firebase.js';
 import { initShop, drawShop, shopMouseMoved, shopMouseClicked, shopKeyPressed, preloadRelicSprites } from './shop.js';
 import {BOSSES} from './boss.js';
 import { RelicMenu } from './Relicmenu.js'
@@ -1648,8 +1648,24 @@ async function submitFinalScore() {
   if (scoreSubmitted) return;
   scoreSubmitted = true;
 
-  const playerName = getPlayerName();
-  await submitScore(playerName, totalScore);
+  const leaderboard = await loadLeaderboard();
+
+  // If the db has less than 15 submissions get score
+  if (leaderboard.length < 15) {
+    const playerName = getPlayerName();
+    await submitScore(playerName, totalScore);
+    return;
+  }
+
+  const lowestTopScore = leaderboard[leaderboard.length - 1].score;
+
+  // Only add new entry to db if score is top 15
+  if (totalScore > lowestTopScore) {
+    const playerName = getPlayerName();
+    await submitScore(playerName, totalScore);
+  } else {
+    console.log("Score not high enough for leaderboard");
+  }
 }
 
 function getShopGameState() {
