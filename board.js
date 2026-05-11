@@ -121,6 +121,8 @@ let doubleHoldActive = false;
 let currentPieceRotations = 0;
 let topClearedRow = ROWS;
 
+let song;
+
 
 const HORIZONTAL_REPEAT_DELAY = 140;
 const HORIZONTAL_REPEAT_INTERVAL = 55;
@@ -173,6 +175,7 @@ const THEME = {
 window.setup = async function() {
     createCanvas(windowWidth, windowHeight);
     await initFirebase();
+    song.loop();
     setBinds();
     originX = (width - BOARD_W) / 2;
     originY = (height - BOARD_H) / 2;
@@ -263,6 +266,7 @@ window.draw = function() {
 };
 window.preload = function() {
   preloadRelicSprites();
+  song = loadSound('assets/audio/finalauidoowen.m4a');
 }
 
 function beginStageIntro(nextState) {
@@ -340,6 +344,7 @@ function spawnPieceOfType(type) {
     const piece = new Piece(startX, startY, type, BOX_SIZE);
     if (collidesWithBoard(piece)) {
         gameOver = true;
+        song.stop();
         submitFinalScore();
         return null;
     }
@@ -448,6 +453,7 @@ function lockPiece() {
     //check if numLockedPieces is less than the bag.
     if (numLockedPieces >= pieceBag) {
         gameOver = true;
+        song.stop();
         submitFinalScore();
         return;
     }
@@ -1530,6 +1536,12 @@ window.keyPressed = function() {
             pauseSettingsOpen = false;
         } else {
             paused = !paused;
+
+            if (paused) {
+                song.pause();
+            } else {
+                song.loop();
+            }
             if (!paused) pauseSettingsOpen = false;
         }
         return false;
@@ -1551,7 +1563,15 @@ window.keyPressed = function() {
 
     if (action === "Pause" && gameState === "standard" && !gameOver) {
         paused = !paused;
+
+        if (paused) {
+            song.pause();
+        } else {
+            song.loop();
+        }
+
         if (!paused) pauseSettingsOpen = false;
+
         return;
     }
 
@@ -1692,6 +1712,7 @@ function resetGame() {
     lastDrop = millis();
     beginStageIntro("standard");
     scoreSubmitted = false;
+    song.loop();
 }
 // restarts the game, but keeps various variables. Used for progressing levels and stages.
 function softReset() {
