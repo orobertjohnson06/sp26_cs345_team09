@@ -282,7 +282,7 @@ function drawLogoArea() {
     const titleH = titleW * (titleImg.height / titleImg.width);
     push();
     drawingContext.shadowBlur = map(shine, -1, 1, 14, 36);
-    drawingContext.shadowColor = 'rgba(232,160,32,0.8)';
+    drawingContext.shadowColor = 'rgba(10, 92, 29, 0.8)';
     drawingContext.globalAlpha = map(shine, -1, 1, 0.75, 1.0);
     image(titleImg, cx - titleW / 2, titleY - titleH / 2, titleW, titleH);
     pop();

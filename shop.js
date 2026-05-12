@@ -5,21 +5,24 @@ const CARD_W   = 160;
 const CARD_H   = 230;
 const CARD_GAP = 36;
 
+
 let shopOpenedAt = -Infinity;
 
-const RARITY_COST = {
-  COMMON: 1,
-  RARE: 2,
-  EPIC: 3,
-  LEGENDARY: 4,
-  UNIQUE: 5,
+const RARITY = {
+  COMMON:    { label: "Common",    color: "#42b3e4", weight: 50, cost: 1 },
+  RARE:      { label: "Rare",      color: "#df7126", weight: 25, cost: 2 },
+  EPIC:      { label: "Epic",      color: "#8a3194", weight: 10, cost: 3 },
+  LEGENDARY: { label: "Legendary", color: "#cf1313", weight:  3, cost: 4 },
+  UNIQUE:    { label: "Unique",    color: "#fb5ae0", weight:  1, cost: 5 },
 };
 
 const SHOP_ITEMS = [
   {
     id: "extra_pieces",
     name: "Extra Pieces",
+    sprite: "assets/shop/common_upgrade.png",
     description: "Add 5 pieces to your bag",
+    rarity: "COMMON",
     cost: 1,
     apply(game) { game.pieceBag += 5; }
   },
@@ -71,17 +74,28 @@ const SHOP_ITEMS = [
 let shopOfferedItems = [];
 let shopHovered = -1;
 let shopErrorUntil = 0;
+const animState = {};
+const ANIM_INTERVAL = 1000 / 10; // 10 FPS for animated relics
 
 // Keys are relic ids, values are p5.Image objects loaded via preload
 const spriteCache = {};
 
 export function preloadRelicSprites() {
+  console.log("preloading sprites...");
   for (const relic of RELICS) {
     if (relic.sprite) {
-      spriteCache[relic.id] = loadImage(
+      const img = loadImage(
         relic.sprite,
-        () => {}, 
-        () => { delete spriteCache[relic.id]; } //falls back if can't load img
+        () => {
+          spriteCache[relic.id] = {
+            image:    img,
+            animated: (relic.spriteFrames ?? 1) > 1,  // false if frames missing or 1
+            frames:   relic.spriteFrames ?? 1,          // defaults to 1
+            frameW:   64,
+            frameH:   64,
+          };
+        },
+        () => { delete spriteCache[relic.id]; }
       );
     }
   }
@@ -113,7 +127,7 @@ function relicToShopItem(relic) {
     id: relic.id,
     name: relic.name,
     description: relic.description,
-    cost: RARITY_COST[relic.rarityKey] ?? 1,
+    cost: [relic.rarityKey] ?? 1,
     rarityColor: relic.rarity.color,
     rarityLabel: relic.rarity.label,
     weight: relic.rarity.spawnWeight,
@@ -180,18 +194,45 @@ export function drawShop(recollectionUsed, recollection) {
     const iconX = x + CARD_W / 2 - iconSize / 2;
     const iconY = y + 18;
     if (item.isRelic && spriteCache[item.id]) {
-      noSmooth();
-      image(spriteCache[item.id], iconX, iconY, iconSize, iconSize);
-      smooth();
+    const cached = spriteCache[item.id];
+    noSmooth();
+
+    // figure out which frame to show
+    let frameX = 0;
+    if (cached.animated && shopHovered === i) {
+      console.log("animating", item.id, "frame:", animState[item.id]?.frame, "shopHovered:", shopHovered, "i:", i);
+      if (!animState[item.id]) {
+        animState[item.id] = { frame: 0, lastTick: millis() };
+      }
+      const state = animState[item.id];
+      if (millis() - state.lastTick > ANIM_INTERVAL) {
+        state.frame = (state.frame + 1) % cached.frames;
+        state.lastTick = millis();
+      }
+      frameX = state.frame * cached.frameW;
     } else {
-      fill(255);
-      noStroke();
-      rect(iconX, iconY, iconSize, iconSize, 4);
-      stroke(200);
-      strokeWeight(1);
-      noFill();
-      rect(iconX + 2, iconY + 2, iconSize - 4, iconSize - 4, 3);
+      if (animState[item.id]) animState[item.id].frame = 0; // reset on unhover
+      frameX = 0;
     }
+
+    // same draw call for both animated and static
+    image(
+      cached.image,
+      iconX, iconY, iconSize, iconSize,
+      frameX, 0, cached.frameW, cached.frameH
+    );
+
+    smooth();
+  } else {
+    // fallback placeholder if no sprite loaded
+    fill(255);
+    noStroke();
+    rect(iconX, iconY, iconSize, iconSize, 4);
+    stroke(200);
+    strokeWeight(1);
+    noFill();
+    rect(iconX + 2, iconY + 2, iconSize - 4, iconSize - 4, 3);
+  }
     //rarity label
     if (item.rarityLabel) {
       noStroke();
