@@ -185,13 +185,12 @@ const THEME = {
 function applyAudioSettings() {
 
   // gameplay music
-  if (window.gameMusic) {
-
-    window.gameMusic.setVolume(
-      (audioSettings.master / 100) *
-      (audioSettings.music / 100)
+if (song) {
+    song.setVolume(
+        (audioSettings.master / 100) *
+        (audioSettings.music / 100)
     );
-  }
+}
 
   // gameplay sound effects
   if (window.gameSounds) {
@@ -209,6 +208,7 @@ function applyAudioSettings() {
 window.setup = async function() {
     createCanvas(windowWidth, windowHeight);
     await initFirebase();
+    applyAudioSettings();
     song.loop();
     setBinds();
     originX = (width - BOARD_W) / 2;
