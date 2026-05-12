@@ -9,6 +9,8 @@ const DEFAULT_BINDS = [
   {action:'Hard Drop', key:' '},
   {action:'Rotate', key:'W'},
   {action:'Hold Piece', key:'C'},
+  {action:'Use Active Relic 1', key:'E'},
+  {action:'Use Active Relic 2', key:'Q'},
   {action:'Pause', key:'P'},
 ];
 const C = {

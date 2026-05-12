@@ -3,7 +3,7 @@ export const RARITY = Object.freeze({
   RARE: {label: "Rare", color: "#2196f3", spawnWeight: 10},
   EPIC: {label: "Epic", color: "#9c27b0", spawnWeight:  5},
   LEGENDARY: {label: "Legendary", color: "#ff9800", spawnWeight: 3},
-  UNIQUE: {label: "Unique", color: "#d40e95", spawnWeight: 1}
+  UNIQUE: {label: "Unique", color: "#d40e95", spawnWeight: 100}
 });
 
 
@@ -210,11 +210,11 @@ export const RELICS = [
     },
   }),
   new Relic({
-    id: "thermonuclear",
-    name: "Thermonuclear",
+    id: "thermonuclear_bomb",
+    name: "Thermonuclear Bomb",
     sprite: "assets/relics/unique_thermonuclear-Sheet-export.png",
     rarity: "UNIQUE",
-    description: "When used, activates a nuke that clears the bottom 3 rows of the board but grants no score.",
+    description: "Once per level, use your relic key to clear the bottom 3 lines and drop everything down.",
     ability(game) {
       game.thermonuclearActive = this.active;
     },
