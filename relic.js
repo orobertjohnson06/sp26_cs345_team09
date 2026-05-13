@@ -81,16 +81,7 @@ export const RELICS = [
       game.rockBottomActive = this.active;
     },
   }),
-  new Relic({
-    id: "score_multi",
-    name: "Score Multi",
-    sprite: "assets/relics/common_scoremulti.png",
-    rarity: "COMMON",
-    description: "Increases score multi of line clears by +0.05x per line clear this level.",
-    ability(game) {
-      game.scoreMultiActive = this.active;
-    },
-  }),
+  
   new Relic({
       id: "cleaner",
       name: "Cleaner",
@@ -218,9 +209,19 @@ export const RELICS = [
     sprite: "assets/relics/legendary_letsgogambling-Sheet-export.png",
     spriteFrames: 10,
     rarity: "LEGENDARY",
-    description: "Getting the same piece 3 times in a row multiplies your total score for this level by 1.2x.",
+    description: "Getting the same piece 3 times in a row multiplies your TOTAL score for this level by 1.2x.",
     ability(game) {
       game.letsGoGamblingActive = this.active;
+    },
+  }),
+  new Relic({
+    id: "infinity",
+    name: "Infinity",
+    sprite: "assets/relics/legendary_infinity-Sheet-export.png",
+    rarity: "LEGENDARY",
+    description: "Permanently increases score multi by +0.03x per line cleared.",
+    ability(game) {
+      game.infinityActive = this.active;
     },
   }),
   new Relic({

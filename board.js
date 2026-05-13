@@ -9,7 +9,7 @@ const BOX_SIZE = 32;
 const BOARD_W = COLS * BOX_SIZE;
 const BOARD_H = ROWS * BOX_SIZE;
 const PIECE_TYPES = ["4Line", "L", "BackL", "T", "S", "Z", "2by2"];
-const POINTS = [0, 100, 300, 500, 700, 1000, 1200, 1500];
+const POINTS = [0, 100, 300, 500, 800, 1000, 1200, 1500];
 const SPRITES = {};
 const DEFAULT_RECOLLECTION = 5;
 const LIMITED_VISION_RADIUS = 200;
@@ -18,7 +18,6 @@ let originX, originY;
 let board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
 let activePiece = null;
 let nextType = null;
-let pieceQueue = [];
 let score = 0;
 let totalScore = 0;
 let scoreRequirement = 500;
@@ -95,8 +94,8 @@ let sqrBonus = 0;
 let sqrBonusActive = false;
 let rockBottomBonus = 0.2;
 let rockBottomActive = false;
-let scoreMultiActive = false;
-let scoreMultiBonus = 0.05;
+let infinityActive = false;
+let infinityBonus = 0.03;
 let cleanerActive = false;
 let cleanerBonus = 1;
 let comboLineActive = false;
@@ -110,7 +109,7 @@ let scoreAdd = 0;
 let towerBuilderActive = false;
 let towerBuilderBonus = 1.4;
 let swanSongActive = false;
-let swanSongBonus = 2.5;
+let swanSongBonus = 2;
 let piggyBankActive = false;
 let piggyBankBonus = 10;
 let piggyBankStored = 0;
@@ -149,7 +148,7 @@ const game = {
     sqrBonusActive,
     slowed,
     rockBottomActive,
-    scoreMultiActive,
+    infinityActive,
     bubbleUpActive,
     letsGoGamblingActive,
     thermonuclearActive,
@@ -232,7 +231,7 @@ window.setup = async function() {
 function applyRelics() {
     game.sqrBonusActive = false;
     game.rockBottomActive = false;
-    game.scoreMultiActive = false;
+    game.infinityActive = false;
     game.comboLineActive = false;
     game.cleanerActive = false;
     game.towerBuilderActive = false;
@@ -256,7 +255,7 @@ function applyRelics() {
     // Sync back
     sqrBonusActive = game.sqrBonusActive;
     rockBottomActive = game.rockBottomActive;
-    scoreMultiActive = game.scoreMultiActive;
+    infinityActive = game.infinityActive;
     comboLineActive = game.comboLineActive;
     towerBuilderActive = game.towerBuilderActive;
     piggyBankActive = game.piggyBankActive;
@@ -610,9 +609,9 @@ function updateScore(cleared) {
         bonusesUsed.push("Cleaner Bonus");
     }
     // Multi Score relic
-    if(scoreMultiActive) {
-        scoreMulti += scoreMultiBonus * linesCleared;
-        bonusesUsed.push("Score Multi Bonus");
+    if(infinityActive) {
+        scoreMulti += infinityBonus * linesCleared;
+        bonusesUsed.push("Infinity Bonus");
     }
 
     // Rock Bottom relic
@@ -638,7 +637,7 @@ function updateScore(cleared) {
     }
 
     //Swan Song relic
-    if (swanSongActive && pieceBag - numLockedPieces <= 0) {
+    if (swanSongActive && pieceBag - numLockedPieces <= 4) {
         scoreMulti *= swanSongBonus;
         bonusesUsed.push("Swan Song Bonus");
     }
@@ -1891,7 +1890,7 @@ function getShopGameState() {
         relicsHeld, 
 
         sqrBonus,
-        scoreMultiBonus,
+        infinityBonus,
         addSqrBonus,
 
         closeShop
