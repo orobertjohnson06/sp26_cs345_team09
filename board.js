@@ -650,7 +650,7 @@ function updateScore(cleared) {
         scoreMulti += cleanerBonus * (1 + (relicsMap['cleaner'].level - 1) * 0.5);
         bonusesUsed.push("Cleaner Bonus");
     }
-    // Multi Score relic
+    // Infinity relic
     if(infinityActive) {
         scoreMulti += infinityBonus * linesCleared * (1 + (relicsMap['infinity'].level - 1) * 0.2);
         bonusesUsed.push("Infinity Bonus");
@@ -696,9 +696,9 @@ function updateScore(cleared) {
 
     // Hot Streak relic
     if (hotStreakActive) {
-        if (!isTowerAbove50Percent()) {
-            scoreMulti += hotStreakBonus * hotStreakStreak;
+        if (towerAbove50Percent()) {
             hotStreakStreak += 1;
+            scoreMulti += hotStreakBonus * hotStreakStreak;
             bonusesUsed.push("Hot Streak Bonus x" + hotStreakStreak);
         } else {
             hotStreakStreak = 0;
@@ -712,18 +712,8 @@ function updateScore(cleared) {
     }
 }
 
-function isTowerAbove60Percent() {
-    const limitRow = Math.floor(ROWS * 0.4);
 
-    for (let r = 0; r < limitRow; r++) {
-        if (board[r].some(cell => cell !== null)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-function isTowerAbove50Percent() {
+function towerAbove50Percent() {
     const limitRow = Math.floor(ROWS * 0.5);
 
     for (let r = 0; r < limitRow; r++) {
@@ -766,7 +756,7 @@ function updateLevel() {
         pieceBag += 15;
         scoreRequirement *= scoreFactor;
         scoreIncrement *= scoreFactor;
-        scoreFactor *= 2;
+        scoreFactor *= 1.5;
         recollection++;
         relicMenu.totalPoints = recollection;
         stage++
