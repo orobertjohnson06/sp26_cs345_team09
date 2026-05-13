@@ -66,10 +66,20 @@ let settingsTab = "general";
 let kbScrollY = 0;
 let dragSlider = null;
 let settingsRegions = [];
+const DEFAULT_AUDIO = {
+  master: 100,
+  music: 70,
+  sfx: 80,
+};
+
+let audioSettings =
+  JSON.parse(localStorage.getItem('rq_audio')) ||
+  structuredClone(DEFAULT_AUDIO);
+
 let settingsSliders = [
-    {label: "Master Volume", value: 80},
-    {label: "Music Volume", value: 60},
-    {label: "SFX Volume", value: 75},
+    {label: "Master Volume", value: audioSettings.master},
+    {label: "Music Volume", value: audioSettings.music},
+    {label: "SFX Volume", value: audioSettings.sfx},
 ];
 //leader board
 let scoreSubmitted = false;
@@ -131,6 +141,8 @@ let doubleHoldActive = false;
 // til here
 let currentPieceRotations = 0;
 let topClearedRow = ROWS;
+
+let song;
 
 
 const HORIZONTAL_REPEAT_DELAY = 140;
@@ -201,10 +213,35 @@ const THEME = {
   divider: [26, 52, 31],
   red: [200, 65, 65],
 };
+//audio settings helper
+function applyAudioSettings() {
+
+  // gameplay music
+if (song) {
+    song.setVolume(
+        (audioSettings.master / 100) *
+        (audioSettings.music / 100)
+    );
+}
+
+  // gameplay sound effects
+  if (window.gameSounds) {
+
+    const sfxVolume =
+      (audioSettings.master / 100) *
+      (audioSettings.sfx / 100);
+
+    window.gameSounds.forEach(sound => {
+      sound.setVolume(sfxVolume);
+    });
+  }
+}
 
 window.setup = async function() {
     createCanvas(windowWidth, windowHeight);
     await initFirebase();
+    applyAudioSettings();
+    song.loop();
     setBinds();
     originX = (width - BOARD_W) / 2;
     originY = (height - BOARD_H) / 2;
@@ -299,6 +336,7 @@ window.draw = function() {
 };
 window.preload = function() {
   preloadRelicSprites();
+  song = loadSound('assets/audio/finalauidoowen.m4a');
 }
 
 function beginStageIntro(nextState) {
@@ -376,6 +414,7 @@ function spawnPieceOfType(type) {
     const piece = new Piece(startX, startY, type, BOX_SIZE);
     if (collidesWithBoard(piece)) {
         gameOver = true;
+        song.stop();
         submitFinalScore();
         return null;
     }
@@ -484,6 +523,7 @@ function lockPiece() {
     //check if numLockedPieces is less than the bag.
     if (numLockedPieces >= pieceBag) {
         gameOver = true;
+        song.stop();
         submitFinalScore();
         return;
     }
@@ -1116,6 +1156,9 @@ function handlePauseMenuClick() {
                 settingsModalOpen = false;
                 settingsModalProgress = 0;
                 cancelSettingsListen();
+                if (!song.isPlaying()) {
+                    song.play();
+                }
                 return;
             case "restart":
                 pauseSettingsOpen = false;
@@ -1583,6 +1626,12 @@ window.keyPressed = function() {
             pauseSettingsOpen = false;
         } else {
             paused = !paused;
+
+            if (paused) {
+                song.pause();
+            } else {
+                song.loop();
+            }
             if (!paused) pauseSettingsOpen = false;
         }
         return false;
@@ -1604,7 +1653,15 @@ window.keyPressed = function() {
 
     if (action === "Pause" && gameState === "standard" && !gameOver) {
         paused = !paused;
+
+        if (paused) {
+            song.pause();
+        } else {
+            song.loop();
+        }
+
         if (!paused) pauseSettingsOpen = false;
+
         return;
     }
 
@@ -1773,6 +1830,7 @@ function resetGame() {
     lastDrop = millis();
     beginStageIntro("standard");
     scoreSubmitted = false;
+    song.loop();
 }
 // restarts the game, but keeps various variables. Used for progressing levels and stages.
 function softReset() {

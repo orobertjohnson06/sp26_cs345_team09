@@ -25,10 +25,20 @@ const C = {
   text: '#f0e8d0',
   textDim: '#a0b898',
 };
+const DEFAULT_AUDIO = {
+  master: 100,
+  music: 80,
+  sfx: 80
+};
+
+let audioSettings =
+  JSON.parse(localStorage.getItem('rq_audio')) ||
+  structuredClone(DEFAULT_AUDIO);
+  
 const sliders = [
-  {label:'Master Volume', value:80},
-  {label:'Music Volume', value:60},
-  {label:'SFX Volume', value:75},
+  {label:'Master Volume', key:'master', value:audioSettings.master},
+  {label:'Music Volume', key:'music', value:audioSettings.music},
+  {label:'SFX Volume', key:'sfx', value:audioSettings.sfx},
 ];
 const buttonHover = {start:0, settings:0, leaderboard:0, quit:0};
 //menu
@@ -104,6 +114,7 @@ window.setup =  async function () {
   for (let i = 0; i < 40; i++) particles.push(resetParticle({}));
   cx = width / 2;
   await initFirebase();
+  applyAudioSettings();
 }
 
 window.windowResized = function () {
@@ -717,10 +728,21 @@ window.mousePressed = function () {
 }
 
 window.mouseDragged = function () {
+
   if (dragSlider === null) return;
+
   const s = sliders[dragSlider.index];
+
   const dx = mouseX - dragSlider.startX;
-  s.value = constrain(dragSlider.startVal + round(dx / dragSlider.trackW * 100), 0, 100);
+
+  s.value = constrain(
+    dragSlider.startVal +
+    round(dx / dragSlider.trackW * 100),
+    0,
+    100
+  );
+
+  saveAudioSettings();
 }
 
 window.mouseReleased = function () {
@@ -749,6 +771,7 @@ function handleRegionClick(r) {
   if (r.id === 'start') {
     window.location.href = 'gamePage.html';
   } else if (r.id === 'settings') {
+    leaderboardOpen = false;
     modalOpen = true;
     kbScrollY = 0;
   } else if (r.id === 'quit') {
@@ -768,9 +791,19 @@ function handleRegionClick(r) {
     startListen(parseInt(r.id.slice(3)));
   } else if (r.id === 'reset-keys') {
     binds = structuredClone(DEFAULT_BINDS);
+
+    sliders[0].value = DEFAULT_AUDIO.master;
+    sliders[1].value = DEFAULT_AUDIO.music;
+    sliders[2].value = DEFAULT_AUDIO.sfx;
+
+    saveAudioSettings();
+
     localStorage.removeItem('rq_binds');
+
     cancelListen();
   } else if (r.id === 'leaderboard') {
+    modalOpen = false;
+    cancelListen();
     openLeaderboard();
   } else if (r.id === 'close-leaderboard') {
     leaderboardOpen = false;
@@ -802,6 +835,41 @@ function startListen(index) {
 
 function cancelListen() {
   listening = null;
+}
+
+function saveAudioSettings() {
+
+  audioSettings.master = sliders[0].value;
+  audioSettings.music = sliders[1].value;
+  audioSettings.sfx = sliders[2].value;
+
+  localStorage.setItem('rq_audio', JSON.stringify(audioSettings));
+
+  applyAudioSettings();
+}
+
+function applyAudioSettings() {
+
+  // menu music
+  if (window.bgMusic) {
+
+    window.bgMusic.setVolume(
+      (audioSettings.master / 100) *
+      (audioSettings.music / 100)
+    );
+  }
+
+  // menu sound effects
+  if (window.sfxSounds) {
+
+    const sfxVolume =
+      (audioSettings.master / 100) *
+      (audioSettings.sfx / 100);
+
+    window.sfxSounds.forEach(sound => {
+      sound.setVolume(sfxVolume);
+    });
+  }
 }
 
 function updateCursor() {
