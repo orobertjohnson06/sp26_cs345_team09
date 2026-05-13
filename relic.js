@@ -23,8 +23,8 @@ class Relic {
     this.sprite = sprite;
     this.rarity = RARITY[rarity];
     this.rarityKey = rarity;
-    this.level = 1;
     this.description = description;
+    this.level = 1;
     this.ability = ability;
     this.active = false;
     this.spriteFrames = spriteFrames;
@@ -81,16 +81,7 @@ export const RELICS = [
       game.rockBottomActive = this.active;
     },
   }),
-  new Relic({
-    id: "score_multi",
-    name: "Score Multi",
-    sprite: "assets/relics/common_scoremulti.png",
-    rarity: "COMMON",
-    description: "Increases score multi of line clears by +0.05x per line clear this level.",
-    ability(game) {
-      game.scoreMultiActive = this.active;
-    },
-  }),
+  
   new Relic({
       id: "cleaner",
       name: "Cleaner",
@@ -116,7 +107,7 @@ export const RELICS = [
     name: "Swan Song",
     sprite: "assets/relics/rare_swansong.png",
     rarity: "RARE",
-    description: "The last piece from your piece bag grants 2.5x score multi.",
+    description: "The last 5 pieces from your piece bag grants 2x score multi.",
     ability(game) {
       game.swanSongActive = this.active;
     },
@@ -142,6 +133,16 @@ export const RELICS = [
     },
   }),
   new Relic({
+    id: "piggy_bank",
+    name: "Piggy Bank",
+    sprite: "assets/relics/rare_piggybank.png",
+    rarity: "RARE",
+    description: "Every piece placed banks 10 base score, paid out on your next line clear.",
+    ability(game) {
+      game.piggyBankActive = this.active;
+    },
+  }),
+  new Relic({
     id: "turbo_booster",
     name: "Turbo Booster",
     sprite: "assets/relics/epic_turboboost.png",
@@ -162,6 +163,16 @@ export const RELICS = [
     },
   }),
   new Relic({
+    id: "Hot Streak",
+    name: "Hot Streak",
+    sprite: "assets/relics/epic_hotstreak.png",
+    rarity: "EPIC",
+    description: "Every piece placed without entering half way point of the board grants +0.01 score multi, resetting when you do.",
+    ability(game) {
+      game.doubleHoldActive = this.active;
+    },
+  }),
+  new Relic({
     id: "extra_firepower",
     name: "Extra Firepower",
     sprite: "assets/relics/epic_extrafirepower.png",
@@ -176,7 +187,7 @@ export const RELICS = [
     name: "Stack Master",
     sprite: "assets/relics/epic_stackmaster.png",
     rarity: "EPIC",
-    description: "Grants +0.005 score multi per tile above the half way point of the board.",
+    description: "Grants +0.01 score multi per tile above the half way point of the board.",
     ability(game) {
       game.stackMasterActive = this.active;
     },
@@ -198,9 +209,19 @@ export const RELICS = [
     sprite: "assets/relics/legendary_letsgogambling-Sheet-export.png",
     spriteFrames: 10,
     rarity: "LEGENDARY",
-    description: "Getting the same piece 3 times in a row multiplies your total score for this level by 1.2x.",
+    description: "Getting the same piece 3 times in a row multiplies your TOTAL score for this level by 1.2x.",
     ability(game) {
       game.letsGoGamblingActive = this.active;
+    },
+  }),
+  new Relic({
+    id: "infinity",
+    name: "Infinity",
+    sprite: "assets/relics/legendary_infinity-Sheet-export.png",
+    rarity: "LEGENDARY",
+    description: "Permanently increases score multi by +0.03x per line cleared.",
+    ability(game) {
+      game.infinityActive = this.active;
     },
   }),
   new Relic({
@@ -220,7 +241,7 @@ export const RELICS = [
     sprite: "assets/relics/unique_thermonuclear-Sheet-export.png",
     spriteFrames: 10,
     rarity: "UNIQUE",
-    description: "Once per level, use your relic key to clear the bottom 3 lines and drop everything down.",
+    description: "Once per level, activates a nuke that clears the bottom 3 rows of the board but grants no score.",
     ability(game) {
       game.thermonuclearActive = this.active;
     },

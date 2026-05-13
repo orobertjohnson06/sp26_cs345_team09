@@ -10,7 +10,7 @@ const BOX_SIZE = 32;
 const BOARD_W = COLS * BOX_SIZE;
 const BOARD_H = ROWS * BOX_SIZE;
 const PIECE_TYPES = ["4Line", "L", "BackL", "T", "S", "Z", "2by2"];
-const POINTS = [0, 100, 300, 500, 700, 900, 1200, 1500];
+const POINTS = [0, 100, 300, 500, 800, 1000, 1200, 1500];
 const SPRITES = {};
 const DEFAULT_RECOLLECTION = 5;
 const LIMITED_VISION_RADIUS = 200;
@@ -19,7 +19,6 @@ let originX, originY;
 let board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
 let activePiece = null;
 let nextType = null;
-let pieceQueue = [];
 let score = 0;
 let totalScore = 0;
 let scoreRequirement = 500;
@@ -69,10 +68,20 @@ let settingsTab = "general";
 let kbScrollY = 0;
 let dragSlider = null;
 let settingsRegions = [];
+const DEFAULT_AUDIO = {
+  master: 100,
+  music: 70,
+  sfx: 80,
+};
+
+let audioSettings =
+  JSON.parse(localStorage.getItem('rq_audio')) ||
+  structuredClone(DEFAULT_AUDIO);
+
 let settingsSliders = [
-    {label: "Master Volume", value: 80},
-    {label: "Music Volume", value: 60},
-    {label: "SFX Volume", value: 75},
+    {label: "Master Volume", value: audioSettings.master},
+    {label: "Music Volume", value: audioSettings.music},
+    {label: "SFX Volume", value: audioSettings.sfx},
 ];
 //leader board
 let scoreSubmitted = false;
@@ -97,8 +106,8 @@ let sqrBonus = 0;
 let sqrBonusActive = false;
 let rockBottomBonus = 0.2;
 let rockBottomActive = false;
-let scoreMultiActive = false;
-let scoreMultiBonus = 0.05;
+let infinityActive = false;
+let infinityBonus = 0.03;
 let cleanerActive = false;
 let cleanerBonus = 1;
 let comboLineActive = false;
@@ -112,8 +121,15 @@ let scoreAdd = 0;
 let towerBuilderActive = false;
 let towerBuilderBonus = 1.4;
 let swanSongActive = false;
-let swanSongBonus = 2.5;
+let swanSongBonus = 2;
+let piggyBankActive = false;
+let piggyBankBonus = 10;
+let piggyBankStored = 0;
 let stackMasterActive = false;
+let stackMasterBonus = 0.01;
+let hotStreakActive = false;
+let hotStreakBonus = 0.01;
+let hotStreakStreak = 0;
 let extraFirepowerActive = false;
 let bubbleUpActive = false;
 let letsGoGamblingActive = false;
@@ -127,6 +143,8 @@ let doubleHoldActive = false;
 // til here
 let currentPieceRotations = 0;
 let topClearedRow = ROWS;
+
+let song;
 
 
 const HORIZONTAL_REPEAT_DELAY = 140;
@@ -144,7 +162,7 @@ const game = {
     sqrBonusActive,
     slowed,
     rockBottomActive,
-    scoreMultiActive,
+    infinityActive,
     bubbleUpActive,
     letsGoGamblingActive,
     thermonuclearActive,
@@ -152,6 +170,8 @@ const game = {
     cleanerActive,
     comboLineActive,
     towerBuilderActive,
+    piggyBankActive,
+    hotStreakActive,
     swanSongActive,
     stackMasterActive,
     extraFirepowerActive,
@@ -195,10 +215,35 @@ const THEME = {
   divider: [26, 52, 31],
   red: [200, 65, 65],
 };
+//audio settings helper
+function applyAudioSettings() {
+
+  // gameplay music
+if (song) {
+    song.setVolume(
+        (audioSettings.master / 100) *
+        (audioSettings.music / 100)
+    );
+}
+
+  // gameplay sound effects
+  if (window.gameSounds) {
+
+    const sfxVolume =
+      (audioSettings.master / 100) *
+      (audioSettings.sfx / 100);
+
+    window.gameSounds.forEach(sound => {
+      sound.setVolume(sfxVolume);
+    });
+  }
+}
 
 window.setup = async function() {
     createCanvas(windowWidth, windowHeight);
     await initFirebase();
+    applyAudioSettings();
+    song.loop();
     setBinds();
     originX = (width - BOARD_W) / 2;
     originY = (height - BOARD_H) / 2;
@@ -225,10 +270,12 @@ window.setup = async function() {
 function applyRelics() {
     game.sqrBonusActive = false;
     game.rockBottomActive = false;
-    game.scoreMultiActive = false;
+    game.infinityActive = false;
     game.comboLineActive = false;
     game.cleanerActive = false;
     game.towerBuilderActive = false;
+    game.piggyBankActive = false;
+    game.hotStreakActive = false;
     game.swanSongActive = false;
     game.stackMasterActive = false;
     game.bubbleUpActive = false;
@@ -247,9 +294,11 @@ function applyRelics() {
     // Sync back
     sqrBonusActive = game.sqrBonusActive;
     rockBottomActive = game.rockBottomActive;
-    scoreMultiActive = game.scoreMultiActive;
+    infinityActive = game.infinityActive;
     comboLineActive = game.comboLineActive;
     towerBuilderActive = game.towerBuilderActive;
+    piggyBankActive = game.piggyBankActive;
+    hotStreakActive = game.hotStreakActive;
     swanSongActive = game.swanSongActive;
     stackMasterActive = game.stackMasterActive;
     bubbleUpActive = game.bubbleUpActive;
@@ -289,6 +338,7 @@ window.draw = function() {
 };
 window.preload = function() {
   preloadRelicSprites();
+  song = loadSound('assets/audio/finalauidoowen.m4a');
 }
 
 function beginStageIntro(nextState) {
@@ -366,6 +416,7 @@ function spawnPieceOfType(type) {
     const piece = new Piece(startX, startY, type, BOX_SIZE);
     if (collidesWithBoard(piece)) {
         gameOver = true;
+        song.stop();
         submitFinalScore();
         return null;
     }
@@ -475,6 +526,7 @@ function lockPiece() {
     //check if numLockedPieces is less than the bag.
     if (numLockedPieces >= pieceBag) {
         gameOver = true;
+        song.stop();
         submitFinalScore();
         return;
     }
@@ -567,33 +619,55 @@ function updateScore(cleared) {
     linesCleared += cleared;
     let baseScore = POINTS[cleared] || 0;
     let scoreMulti = 1;
+    let bonusesUsed = [];
     
     // Base Score calculations
 
     // Sqr squared relic
-    if(sqrBonusActive) baseScore += sqrBonus * (1 + (relicsMap['square^2'].level - 1) * 0.5);
+    if(sqrBonusActive) {
+        baseScore += sqrBonus * (1 + (relicsMap['square^2'].level - 1) * 0.5);
+        bonusesUsed.push("Sqr Bonus");
+    } 
     // Spin 2 Win relic
     if (spin2WinActive && currentPieceRotations > 0) {
         baseScore += 1 * currentPieceRotations * (1 + (relicsMap['spin_2_win'].level - 1) * 0.5);
+        bonusesUsed.push("Spin 2 Win Bonus");
     }
+
+    // Piggy Bank relic
+    if (piggyBankActive && cleared > 0) {
+        baseScore += piggyBankStored;
+        piggyBankStored = 0;
+        bonusesUsed.push("Piggy Bank Bonus");
+    } else if (piggyBankActive) {
+        piggyBankStored += piggyBankBonus;
+    }
+
     // Score Multi Calculations
 
     // Cleaner Relic
     if (cleanerActive && cleared > 0 && board.every(row => row.every(cell => cell === null))) {
         scoreMulti += cleanerBonus * (1 + (relicsMap['cleaner'].level - 1) * 0.5);
+        bonusesUsed.push("Cleaner Bonus");
     }
     // Multi Score relic
-    if(scoreMultiActive) {
-        scoreMulti += scoreMultiBonus * linesCleared * (1 + (relicsMap['score_multi'].level - 1) * 0.2);
+    if(infinityActive) {
+        scoreMulti += infinityBonus * linesCleared * (1 + (relicsMap['infinity'].level - 1) * 0.2);
+        bonusesUsed.push("Infinity Bonus");
     }
+
     // Rock Bottom relic
-    if(rockBottomActive && isTowerBelow15Percent()) 
+    if(rockBottomActive && isTowerBelow15Percent()) {
         scoreMulti += rockBottomBonus * (1 + (relicsMap['rock_bottom'].level - 1) * 0.5);
+        bonusesUsed.push("Rock Bottom Bonus");
+    }
+
     // Combo Line relic
     if (comboLineActive) {
         if (cleared > 0) {
             comboStreak++;
             scoreMulti += comboLineBonus * comboStreak * (1 + (relicsMap['combo_line'].level - 1) * 0.5);
+            bonusesUsed.push("Combo Line Bonus x" + comboStreak);
         } else {
             comboStreak = 0;
         }
@@ -601,22 +675,38 @@ function updateScore(cleared) {
     // Turbo Booster relic
     if (turboBoosterActive && lastMoveWasHardDrop && cleared > 0) {
         scoreMulti += turboBoosterBonus * (1 + (relicsMap['turbo_booster'].level - 1) * 0.5);
+        bonusesUsed.push("Turbo Booster Bonus");
     }
 
     //Swan Song relic
     if (swanSongActive && pieceBag - numLockedPieces <= 0) {
         scoreMulti *= swanSongBonus * (1 + (relicsMap['swan_song'].level - 1) * 0.5);
+        bonusesUsed.push("Swan Song Bonus");
     }
     // Tower Builder relic
     if (towerBuilderActive && cleared > 0 && topClearedRow < 8) {
         scoreMulti *= towerBuilderBonus * (1 + (relicsMap['tower_builder'].level - 1) * 0.5);
+        bonusesUsed.push("Tower Builder Bonus");
     }
     // Stack Master relic
     if (stackMasterActive) {
         scoreMulti *= 1 + (0.005 * howManyTilesAbove50Percent()) * (1 + (relicsMap['stack_master'].level - 1) * 0.5);
+        bonusesUsed.push("Stack Master Bonus");
     }
-    
+
+    // Hot Streak relic
+    if (hotStreakActive) {
+        if (!isTowerAbove50Percent()) {
+            scoreMulti += hotStreakBonus * hotStreakStreak;
+            hotStreakStreak += 1;
+            bonusesUsed.push("Hot Streak Bonus x" + hotStreakStreak);
+        } else {
+            hotStreakStreak = 0;
+        }
+    }
+
     score += baseScore * scoreMulti;
+    console.log(`Cleared: ${cleared}, Base Score: ${baseScore}, Score Multi: ${scoreMulti.toFixed(2)}, Bonuses: ${bonusesUsed.join(", ")}`);
     if (score >= scoreRequirement) {
         updateLevel();
     }
@@ -633,15 +723,26 @@ function isTowerAbove60Percent() {
     return false;
 }
 
-function isTowerBelow15Percent() {
-    const limitRow = Math.floor(ROWS * 0.85);
+function isTowerAbove50Percent() {
+    const limitRow = Math.floor(ROWS * 0.5);
 
-    for (let r = limitRow; r < ROWS; r++) {
+    for (let r = 0; r < limitRow; r++) {
         if (board[r].some(cell => cell !== null)) {
             return true;
         }
     }
     return false;
+}
+
+function isTowerBelow15Percent() {
+    const limitRow = ROWS - 3;
+
+    for (let r = 0; r < limitRow; r++) {
+        if (board[r].some(cell => cell !== null)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 function howManyTilesAbove50Percent() {
@@ -1057,6 +1158,9 @@ function handlePauseMenuClick() {
                 settingsModalOpen = false;
                 settingsModalProgress = 0;
                 cancelSettingsListen();
+                if (!song.isPlaying()) {
+                    song.play();
+                }
                 return;
             case "restart":
                 pauseSettingsOpen = false;
@@ -1524,6 +1628,12 @@ window.keyPressed = function() {
             pauseSettingsOpen = false;
         } else {
             paused = !paused;
+
+            if (paused) {
+                song.pause();
+            } else {
+                song.loop();
+            }
             if (!paused) pauseSettingsOpen = false;
         }
         return false;
@@ -1545,7 +1655,15 @@ window.keyPressed = function() {
 
     if (action === "Pause" && gameState === "standard" && !gameOver) {
         paused = !paused;
+
+        if (paused) {
+            song.pause();
+        } else {
+            song.loop();
+        }
+
         if (!paused) pauseSettingsOpen = false;
+
         return;
     }
 
@@ -1715,6 +1833,7 @@ function resetGame() {
     lastDrop = millis();
     beginStageIntro("standard");
     scoreSubmitted = false;
+    song.loop();
 }
 // restarts the game, but keeps various variables. Used for progressing levels and stages.
 function softReset() {
@@ -1833,7 +1952,7 @@ function getShopGameState() {
         relicsHeld, 
 
         sqrBonus,
-        scoreMultiBonus,
+        infinityBonus,
         addSqrBonus,
 
         closeShop
