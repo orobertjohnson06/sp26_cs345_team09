@@ -117,7 +117,7 @@ export const RELICS = [
     name: "Tower Builder",
     sprite: "assets/relics/rare_towerbuilder.png",
     rarity: "RARE",
-    description: "Lines clears with at least one line in the top 8 rows grant 40% more score multi.",
+    description: "Line clears with at least one line in the top 8 rows grant 40% more score multi.",
     ability(game) {
       game.towerBuilderActive = this.active;
     },
