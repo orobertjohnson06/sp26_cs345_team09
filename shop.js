@@ -26,49 +26,49 @@ const SHOP_ITEMS = [
     cost: 1,
     apply(game) { game.pieceBag += 5; }
   },
-  {
-    id: "slow_fall",
-    name: "Slow Fall",
-    description: "Increase drop delay by 75ms",
-    cost: 1,
-    apply(game) { game.dropInterval = Math.min(500, game.dropInterval + 75); }
-  },
-  {
-    id: "board_wipe",
-    name: "Board Wipe",
-    description: "Clear the bottom 5 rows",
-    cost: 1,
-    apply(game) {
-      for (let i = 0; i < 5; i++) {
-        game.board.pop();
-        game.board.unshift(Array(COLS).fill(null));
-      }
-    }
-  },
-  {
-    id: "peace_treaty",
-    name: "Peace Treaty",
-    description: "Skip the next boss effect",
-    cost: 1,
-    apply(game) { game.skipNextBoss = true; }
-  },
-  {
-    id: "hold_unlock",
-    name: "Hold Refresh",
-    description: "Reset hold so you can use it",
-    cost: 1,
-    apply(game) { game.holdUsed = false; }
-  },
-  {
-    id: "rotation_free",
-    name: "Free Spin",
-    description: "Ignore no-rotate for next level",
-    cost: 1,
-    apply(game) {
-      game.noRotate = false;
-      game.skipNextBoss = true;
-    }
-  },
+  // {
+  //   id: "slow_fall",
+  //   name: "Slow Fall",
+  //   description: "Increase drop delay by 75ms",
+  //   cost: 1,
+  //   apply(game) { game.dropInterval = Math.min(500, game.dropInterval + 75); }
+  // },
+  // {
+  //   id: "board_wipe",
+  //   name: "Board Wipe",
+  //   description: "Clear the bottom 5 rows",
+  //   cost: 1,
+  //   apply(game) {
+  //     for (let i = 0; i < 5; i++) {
+  //       game.board.pop();
+  //       game.board.unshift(Array(COLS).fill(null));
+  //     }
+  //   }
+  // },
+  // {
+  //   id: "peace_treaty",
+  //   name: "Peace Treaty",
+  //   description: "Skip the next boss effect",
+  //   cost: 1,
+  //   apply(game) { game.skipNextBoss = true; }
+  // },
+  // {
+  //   id: "hold_unlock",
+  //   name: "Hold Refresh",
+  //   description: "Reset hold so you can use it",
+  //   cost: 1,
+  //   apply(game) { game.holdUsed = false; }
+  // },
+  // {
+  //   id: "rotation_free",
+  //   name: "Free Spin",
+  //   description: "Ignore no-rotate for next level",
+  //   cost: 1,
+  //   apply(game) {
+  //     game.noRotate = false;
+  //     game.skipNextBoss = true;
+  //   }
+  // },
 ];
 
 let shopOfferedItems = [];
