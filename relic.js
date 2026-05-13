@@ -3,7 +3,7 @@ export const RARITY = Object.freeze({
   RARE: {label: "Rare", color: "#df7126", spawnWeight: 7},
   EPIC: {label: "Epic", color: "#8a3194", spawnWeight:  5},
   LEGENDARY: {label: "Legendary", color: "#cf1313", spawnWeight: 4},
-  UNIQUE: {label: "Unique", color: "#fb5ae0", spawnWeight: 3}
+  UNIQUE: {label: "Unique", color: "#fb5ae0", spawnWeight: 4}
 });
 
 
