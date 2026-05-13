@@ -1,9 +1,9 @@
 import { relicsHeld } from "./board.js";
 import { RELICS } from "./relic.js";
 
-const CARD_W   = 160;
-const CARD_H   = 230;
-const CARD_GAP = 36;
+const CARD_W   = 240;
+const CARD_H   = 345;
+const CARD_GAP = 48;
 
 
 let shopOpenedAt = -Infinity;
@@ -191,7 +191,7 @@ export function drawShop(recollectionUsed, recollection) {
       fill(item.rarityColor);
       rect(x + 10, y + 6, CARD_W - 20, 4, 2);
     }
-    const iconSize = 52;
+    const iconSize = 90;
     const iconX = x + CARD_W / 2 - iconSize / 2;
     const iconY = y + 18;
     if (item.isRelic && spriteCache[item.id]) {
@@ -240,26 +240,26 @@ export function drawShop(recollectionUsed, recollection) {
       fill(item.rarityColor ?? "#b0b0b0");
       textSize(10);
       textAlign(CENTER, TOP);
-      text(item.rarityLabel.toUpperCase(), x + CARD_W / 2, y + 78);
+      text(item.rarityLabel.toUpperCase(), x + CARD_W / 2, y + 110);
     }
     //item name
     noStroke();
     fill(255);
     textSize(14);
     textAlign(CENTER, TOP);
-    text(item.name, x + CARD_W / 2, y + 90);
+    text(item.name, x + CARD_W / 2, y + 125);
 
     const descPad = 10;
     const descW = CARD_W - descPad * 2;
-    const descH = 48;
+    const descH = 90;
     fill(170);
-    textSize(11);
+    textSize(15);
     textAlign(CENTER, TOP);
-    text(item.description, x + descPad, y + 110, descW, descH);
+    text(item.description, x + descPad, y + 150, descW, descH);
     fill(200);
     textSize(11);
     textAlign(CENTER, TOP);
-    text("Cost: " + relicCost(item), x + CARD_W / 2, y + 168);
+    text("Cost: " + relicCost(item), x + CARD_W / 2, y + CARD_H - 45);
     fill(hovered ? 255 : 130);
     textSize(11);
     text("[" + (i + 1) + "]  Select", x + CARD_W / 2, y + CARD_H - 22);

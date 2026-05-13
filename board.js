@@ -676,13 +676,14 @@ function updateScore(cleared) {
     } 
     // Spin 2 Win relic
     if (spin2WinActive && currentPieceRotations > 0) {
+        if (currentPieceRotations > 10) currentPieceRotations = 10; // Cap the bonus at 10 rotations
         baseScore += 1 * currentPieceRotations * (1 + (relicsMap['spin_2_win'].level - 1) * 0.5);
         bonusesUsed.push("Spin 2 Win Bonus");
     }
 
     // Piggy Bank relic
     if (piggyBankActive && cleared > 0) {
-        baseScore += piggyBankStored;
+        baseScore += piggyBankStored * (1 + (relicsMap['piggy_bank'].level - 1) * 0.5);
         piggyBankStored = 0;
         bonusesUsed.push("Piggy Bank Bonus");
     } else if (piggyBankActive) {
@@ -742,9 +743,9 @@ function updateScore(cleared) {
 
     // Hot Streak relic
     if (hotStreakActive) {
-        if (towerAbove50Percent()) {
+        if (!towerAboveRow10()) {
             hotStreakStreak += 1;
-            scoreMulti += hotStreakBonus * hotStreakStreak;
+            scoreMulti += hotStreakBonus * hotStreakStreak * (1 + (relicsMap['hot_streak'].level - 1) * 0.5);
             bonusesUsed.push("Hot Streak Bonus x" + hotStreakStreak);
         } else {
             hotStreakStreak = 0;
@@ -759,15 +760,13 @@ function updateScore(cleared) {
 }
 
 
-function towerAbove50Percent() {
-    const limitRow = Math.floor(ROWS * 0.5);
-
-    for (let r = 0; r < limitRow; r++) {
-        if (board[r].some(cell => cell !== null)) {
-            return true;
-        }
+function towerAboveRow10() {
+  for (let r = 0; r < 10; r++) {
+    if (board[r].some(cell => cell !== null)) {
+      return true;
     }
-    return false;
+  }
+  return false;
 }
 
 function isTowerBelow15Percent() {
@@ -1077,7 +1076,7 @@ function drawLeftPanel() {
   drawSectionLabel('SCORE', px + 12, cy);
   cy += 13;
   drawStatRow('CURRENT', typeof score !== 'undefined' 
-    ? Math.round(score) : 0, px, cy, pw);
+  ? Math.trunc(score) : 0, px, cy, pw);
   cy += 19;
   drawStatRow('TOTAL', typeof totalScore !== 'undefined' 
     ? Math.trunc(totalScore) : 0, px, cy, pw); 
@@ -2167,5 +2166,5 @@ function drawStatRow(label, value, panelX, y, panelW, valueSize) {
   textAlign(RIGHT, TOP);
   fill(...THEME.textBright);
   textSize(valueSize);
-  text(value, panelX + panelW - 12, y);
+  text(Math.trunc(value), panelX + panelW - 12, y);
 }

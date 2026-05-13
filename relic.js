@@ -107,7 +107,7 @@ export const RELICS = [
     name: "Swan Song",
     sprite: "assets/relics/rare_swansong.png",
     rarity: "RARE",
-    description: "The last 5 pieces from your piece bag grants 2x score multi.",
+    description: "The last 5 pieces from your piece bag grant 100% more score multi.",
     ability(game) {
       game.swanSongActive = this.active;
     },
@@ -117,7 +117,7 @@ export const RELICS = [
     name: "Tower Builder",
     sprite: "assets/relics/rare_towerbuilder.png",
     rarity: "RARE",
-    description: "Lines clears with at least one line in the top 8 rows grants 1.4x score multi.",
+    description: "Lines clears with at least one line in the top 8 rows grant 40% more score multi.",
     ability(game) {
       game.towerBuilderActive = this.active;
     },
@@ -127,7 +127,7 @@ export const RELICS = [
     name: "Spin 2 Win",
     sprite: "assets/relics/rare_spin2win.png",
     rarity: "RARE",
-    description: "Increases base score of pieces by +1 per rotation done before placing.",
+    description: "Increases base score of pieces by +1 per rotation done before placing, capped at +10.",
     ability(game) {
       game.spin2WinActive = this.active;
     },
@@ -167,9 +167,9 @@ export const RELICS = [
     name: "Hot Streak",
     sprite: "assets/relics/epic_hotstreak.png",
     rarity: "EPIC",
-    description: "Every piece placed without entering half way point of the board grants +0.01 score multi, resetting when you do.",
+    description: "Every piece placed without entering the half way point of the board grants 1% more score multi, resetting when you do.",
     ability(game) {
-      game.doubleHoldActive = this.active;
+      game.hotStreakActive = this.active;
     },
   }),
   new Relic({
@@ -187,7 +187,7 @@ export const RELICS = [
     name: "Stack Master",
     sprite: "assets/relics/epic_stackmaster.png",
     rarity: "EPIC",
-    description: "Grants +0.01 score multi per tile above the half way point of the board.",
+    description: "Grants 1% more score multi per tile above the half way point of the board.",
     ability(game) {
       game.stackMasterActive = this.active;
     },
@@ -217,6 +217,7 @@ export const RELICS = [
   new Relic({
     id: "infinity",
     name: "Infinity",
+    spriteFrames: 14,
     sprite: "assets/relics/legendary_infinity-Sheet-export.png",
     rarity: "LEGENDARY",
     description: "Permanently increases score multi by +0.03x per line cleared.",
