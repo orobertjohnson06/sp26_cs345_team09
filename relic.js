@@ -1,9 +1,9 @@
 export const RARITY = Object.freeze({
-  COMMON: {label: "Common", color: "#b0b0b0", spawnWeight: 20},
-  RARE: {label: "Rare", color: "#2196f3", spawnWeight: 10},
-  EPIC: {label: "Epic", color: "#9c27b0", spawnWeight:  5},
-  LEGENDARY: {label: "Legendary", color: "#ff9800", spawnWeight: 3},
-  UNIQUE: {label: "Unique", color: "#d40e95", spawnWeight: 1}
+  COMMON: {label: "Common", color: "#42b3e4", spawnWeight: 20},
+  RARE: {label: "Rare", color: "#df7126", spawnWeight: 10},
+  EPIC: {label: "Epic", color: "#8a3194", spawnWeight:  5},
+  LEGENDARY: {label: "Legendary", color: "#cf1313", spawnWeight: 3},
+  UNIQUE: {label: "Unique", color: "#fb5ae0", spawnWeight: 2}
 });
 
 
@@ -17,7 +17,7 @@ class Relic {
    * @param {string} config.description - flavor text
    * @param {Function} config.ability  - function(player, context) called on activate
    */
-  constructor({id, name, sprite, rarity, description = "", ability}) {
+  constructor({id, name, sprite, spriteFrames, rarity, description = "", ability}) {
     this.id = id;
     this.name = name;
     this.sprite = sprite;
@@ -27,6 +27,7 @@ class Relic {
     this.description = description;
     this.ability = ability;
     this.active = false;
+    this.spriteFrames = spriteFrames;
   }
 
   static rollRandom(pool) {
@@ -165,7 +166,7 @@ export const RELICS = [
     name: "Extra Firepower",
     sprite: "assets/relics/epic_extrafirepower.png",
     rarity: "EPIC",
-    description: "Clearing 4 lines at once clears the line above it as well (counts as 5 lines).",
+    description: "Four line clears become five line clears, granting more score.",
     ability(game) {
       game.extraFirepowerActive = this.active;
     },
@@ -175,7 +176,7 @@ export const RELICS = [
     name: "Stack Master",
     sprite: "assets/relics/epic_stackmaster.png",
     rarity: "EPIC",
-    description: "Grants +0.5% score multi per tile above the half way point of the board.",
+    description: "Grants +0.005 score multi per tile above the half way point of the board.",
     ability(game) {
       game.stackMasterActive = this.active;
     },
@@ -184,6 +185,7 @@ export const RELICS = [
     id: "bubble_up",
     name: "Bubble Up",
     sprite: "assets/relics/legendary_bubbleup-Sheet-export.png",
+    spriteFrames: 11,
     rarity: "LEGENDARY",
     description: "Clearing 2+ lines causes consecutive lines with 9 tiles to clear as well (up to 2 additional lines).",
     ability(game) {
@@ -194,6 +196,7 @@ export const RELICS = [
     id: "lets_go_gambling",
     name: "Let's Go Gambling!",
     sprite: "assets/relics/legendary_letsgogambling-Sheet-export.png",
+    spriteFrames: 10,
     rarity: "LEGENDARY",
     description: "Getting the same piece 3 times in a row multiplies your total score for this level by 1.2x.",
     ability(game) {
@@ -204,6 +207,7 @@ export const RELICS = [
     id: "duplicator",
     name: "Duplicator",
     sprite: "assets/relics/unique_duplicator-Sheet-export.png",
+    spriteFrames: 10,
     rarity: "UNIQUE",
     description: "When used, duplicates your current piece and queues it.",
     ability(game) {
@@ -211,11 +215,12 @@ export const RELICS = [
     },
   }),
   new Relic({
-    id: "thermonuclear",
-    name: "Thermonuclear",
+    id: "thermonuclear_bomb",
+    name: "Thermonuclear Bomb",
     sprite: "assets/relics/unique_thermonuclear-Sheet-export.png",
+    spriteFrames: 10,
     rarity: "UNIQUE",
-    description: "When used, activates a nuke that clears the bottom 3 rows of the board but grants no score.",
+    description: "Once per level, use your relic key to clear the bottom 3 lines and drop everything down.",
     ability(game) {
       game.thermonuclearActive = this.active;
     },

@@ -18,6 +18,7 @@ let originX, originY;
 let board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
 let activePiece = null;
 let nextType = null;
+let pieceQueue = [];
 let score = 0;
 let totalScore = 0;
 let scoreRequirement = 500;
@@ -81,6 +82,8 @@ let binds = [
   {action:'Hard Drop', key:' '},
   {action:'Rotate', key:'W'},
   {action:'Hold Piece', key:'C'},
+  {action:'Use Active Relic 1', key:'E'},
+  {action:'Use Active Relic 2', key:'Q'},
   {action:'Pause', key:'P'},
 ];
 let keyMap = {};
@@ -114,7 +117,9 @@ let bubbleUpActive = false;
 let letsGoGamblingActive = false;
 let letsGoGamblingBonus = 0.2;
 let thermonuclearActive = false;
+let thermonuclearUsed = false;
 let duplicatorActive = false;
+let duplicatorUsed = false;
 //not implemented
 let doubleHoldActive = false;
 // til here
@@ -152,6 +157,25 @@ const game = {
     turboBoosterActive,
     doubleHoldActive,
     scoreAdd,
+}
+//bomb relic
+function useThermonuclearBomb() {
+    if (!thermonuclearActive || thermonuclearUsed || gameOver || paused) return;
+
+    for (let i = 0; i < 3; i++) {
+        board.pop();
+        board.unshift(Array(COLS).fill(null));
+    }
+
+    thermonuclearUsed = true;
+}
+
+function useDuplicator() {
+    if (!duplicatorActive || duplicatorUsed || gameOver || paused || !activePiece) return;
+
+    nextType = activePiece.type;
+
+    duplicatorUsed = true;
 }
 //Game Theme
 const THEME = {
@@ -1565,6 +1589,13 @@ window.keyPressed = function() {
         case "Hold Piece" :
             holdPiece();
             break;
+        case "Use Active Relic 1":
+            useActiveRelic(0);
+            break;
+
+        case "Use Active Relic 2":
+            useActiveRelic(1);
+            break;
     }
 }
 
@@ -1608,6 +1639,25 @@ window.mouseWheel = function(event) {
     }
     return relicMenu.mouseWheel(event);
 }
+//active item helpers
+function getActiveRelicsHeld() {
+    return relicsHeld.filter(relic =>
+        relic.id === "thermonuclear_bomb" ||
+        relic.id === "duplicator"
+    );
+}
+function useActiveRelic(index) {
+    const activeRelics = getActiveRelicsHeld();
+    const relic = activeRelics[index];
+
+    if (!relic) return;
+
+    if (relic.id === "thermonuclear_bomb") {
+        useThermonuclearBomb();
+    } else if (relic.id === "duplicator") {
+        useDuplicator();
+    }
+}
 // restarts the game
 function resetGame() {
     board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
@@ -1626,6 +1676,8 @@ function resetGame() {
     gameOver = false;
     paused = false;
     pauseSettingsOpen = false;
+    thermonuclearUsed = false;
+    duplicatorUsed = false;
     holdType = null;
     holdType2 = null;
     holdUsed = false;
@@ -1666,6 +1718,8 @@ function softReset() {
     score = 0;
     numLockedPieces = 0;
     holdType = null;
+    thermonuclearUsed = false;
+    duplicatorUsed = false;
     holdUsed = false;
     leftHeld = false;
     rightHeld = false;
